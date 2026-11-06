@@ -79,7 +79,11 @@ await Promise.all(SOURCES.map(async (src) => {
   try {
     const items = parse(src, await get(src));
     status.sources[src.id] = { ok: true, items: items.length };
-    for (const it of items) if (!state.seen[it.id]) { fresh.push(it); }
+    for (const it of items) {
+      if (state.seen[it.id]) continue;
+      if (src.kind === "meinung") { (state.opinions ||= {})[it.id] = { id: it.id, url: it.url, title: it.title, teaser: it.teaser, ts: it.ts, src: it.src }; state.seen[it.id] = NOW; }
+      else fresh.push(it);
+    }
   } catch (e) {
     status.sources[src.id] = { ok: false, error: String(e.message || e).slice(0, 120) };
   }
@@ -120,7 +124,9 @@ function score(c) {
   const ageH = (NOW - Math.max(...c.items.map((x) => x.ts))) / 3600e3;
   return srcs.size * 2 + leans.size + boost - Math.min(6, ageH / 4);
 }
-const isQuatsch = (c) => c.items.every((x) => SRC[x.src]?.kind === "quatsch");
+const isQuatsch = (c) => false; // Quatsch entscheidet nur noch die KI (plus Wortfilter)
+const NOT_FUNNY = /\b(tot|tote|toten|getötet|stirbt|starb|gestorben|leiche|verletzt|mord|ermordet|tötung|vergewalt|missbrauch|sexuell|unfall|verunglückt|absturz|brand|feuer|explosion|anklage|angeklagt|verurteilt|prozess|haft|gefängnis|krieg|terror|anschlag|schüsse|waffe|messer|opfer|krank|krebs|tumor|suizid|selbstmord|kind(er)? (vermisst|entführt)|entführ|katastrophe|flut|erdbeben|dead|killed|dies|died|murder|rape|abuse|crash|injur|shooting|war\b|terror|victim|cancer|suicide|convicted|charged|sentenced|trial)/i;
+const funnyOK = (t) => !NOT_FUNNY.test(t || "");
 const eligible = (c) => true;  // auch Einzelmeldungen; Gewichtung über score()
 const region = (c) => { const n = {}; for (const x of c.items) { const r = SRC[x.src]?.region || "welt"; n[r] = (n[r] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; };
 
@@ -208,7 +214,7 @@ STRENGE REGELN
 - Jede Aussage bekommt den Schlüssel der Meldung, aus der sie stammt (z. B. "s2"). Nur Schlüssel von unten verwenden.
 - Komplett eigene Worte, keine Sätze aus den Meldungen übernehmen, keine wörtlichen Zitate über 8 Wörter. Keine Wertung.
 - typ "debatte" NUR wenn die Meldungen erkennbar Positionen verschiedener politischer Lager enthalten (Parteien, Verbände, Regierung, Opposition). Positionen nur Akteuren zuschreiben, die laut Meldung genau das vertreten. Links/Mitte/rechts nach den Akteuren, nicht nach dem Medium. Alle drei Seiten gleich lang und gleich stark. Ist eine Seite nicht belegbar, nimm typ "meldung".
-- typ "quatsch" nur für kuriose, harmlose Meldungen zum Schmunzeln (keine Unglücke, keine Opfer).
+- typ "quatsch" NUR wenn die Meldung wirklich lustig, kurios und völlig harmlos ist, zum Lachen oder Schmunzeln (z. B. Tiere in absurden Situationen, skurrile Rekorde, verrückte Missgeschicke ohne Schaden). NIEMALS bei Tod, Verletzten, Verbrechen, Gewalt, Prozessen, Unfällen, Krankheit, Katastrophen, Politik oder Promi-Skandalen.
 - Sonst typ "meldung".
 - cat: eine aus [${CATS}]. icon: eines aus [${ICONS}].
 - title: höchstens 70 Zeichen, bei debatte als Frage. lead: 2–3 neutrale Sätze, zusammen höchstens 380 Zeichen.
@@ -235,7 +241,7 @@ REGELN
 - Nur Fakten aus den Meldungen, nichts ergänzen. Komplett eigene Worte, keine Sätze übernehmen. Neutral, ohne Wertung.
 - title: höchstens 70 Zeichen. lead: 2–3 Sätze, höchstens 350 Zeichen.
 - points: 1–3 weitere Fakten als kurze Sätze, jeweils mit dem Schlüssel der Meldung ([s1], [s2] …), aus der sie stammen. Keine Wiederholung des leads. Wenn nichts Weiteres drinsteht: [].
-- cat: eine aus [${CATS}]. icon: eines aus [${ICONS}]. quatsch: true nur bei kuriosen, harmlosen Meldungen.
+- cat: eine aus [${CATS}]. icon: eines aus [${ICONS}]. quatsch: true NUR wenn die Meldung wirklich lustig, kurios und völlig harmlos ist (zum Lachen). Niemals bei Tod, Verletzten, Verbrechen, Gewalt, Prozessen, Unfällen, Krankheit, Katastrophen, Politik oder Promi-Skandalen.
 - bild: englischer Suchbegriff (2–4 Wörter) für ein Foto eines Ortes, Gebäudes, Gegenstands oder Symbols. NIEMALS Personen, Logos, Parteisymbole, Opfer oder Unglücksorte. Sonst "".
 
 Antworte als JSON-Objekt: {"<ID>":{"title":"…","lead":"…","points":[["Satz.","s1"]],"cat":"…","icon":"…","bild":"…","quatsch":false}, …}
@@ -336,6 +342,7 @@ for (const c of pending) {
     status.ai.provider = res.provider; status.ai.model = res.model;
     const parsed = JSON.parse(res.text.replace(/^```(json)?|```$/g, "").trim());
     const err = validate(parsed, Math.min(14, c.items.length));
+    if (!err && parsed.typ === "quatsch" && !funnyOK(`${parsed.title} ${parsed.lead}`)) { parsed.typ = "meldung"; if (/quatsch/i.test(parsed.cat)) parsed.cat = "Aktuell"; }
     if (err) { status.ai.failed++; log(`Verworfen (${err}): ${c.items[0].title}`); }
     else {
       const noImg = /unglück|kriminal/i.test(parsed.cat || "") || parsed.typ === "quatsch";
@@ -359,7 +366,8 @@ for (let i = 0; i < needShort.length && hasAI && !aiDown; i += 12) {
       if (!s || !s.title || !s.lead || s.title.length > 110) continue;
       const n = Math.min(6, c.items.length), okKey = (k) => /^s\d+$/.test(k) && +k.slice(1) <= n;
       const pts = (Array.isArray(s.points) ? s.points : []).filter((p) => Array.isArray(p) && p.length === 2 && typeof p[0] === "string" && okKey(p[1])).slice(0, 3);
-      const typ = s.quatsch || isQuatsch(c) ? "quatsch" : "meldung", cat = s.quatsch ? "Quatsch" : s.cat || "Aktuell";
+      const funny = s.quatsch === true && funnyOK(`${s.title} ${s.lead}`);
+      const typ = funny ? "quatsch" : "meldung", cat = funny ? "Quatsch" : (/quatsch/i.test(s.cat || "") ? "Aktuell" : s.cat || "Aktuell");
       const card = { typ, cat, icon: s.icon || "news", title: s.title, lead: s.lead.slice(0, 420), points: pts, facts: [], short: true };
       if (imgBudget > 0 && typ !== "quatsch" && !/unglück|kriminal/i.test(cat) && s.bild) { imgBudget--; const img = await commonsImage(String(s.bild).slice(0, 60)); if (img) card.img = img; }
       finish(c, card, "short");
@@ -372,6 +380,84 @@ for (let i = 0; i < needShort.length && hasAI && !aiDown; i += 12) {
 // c) ohne KI: nur Schlagzeile mit Links (kein fremder Anrisstext)
 for (const c of pending) if (!c.card || (c.gen === "raw" && c.newSince > 0)) finish(c, rawCard(c), "raw");
 if (!hasAI) status.ai.note = "Kein KI-Schlüssel gesetzt: nur Schlagzeilen.";
+
+// Bestehende Quatsch-Karten nachprüfen: nur wirklich Lustiges bleibt Quatsch
+for (const c of Object.values(cards)) {
+  const k = c.card; if (!k || k.typ !== "quatsch") continue;
+  if (!funnyOK(`${k.title} ${k.lead} ${(k.points || []).map((p) => p[0]).join(" ")}`) || k.short === undefined && !k.ai) { k.typ = "meldung"; if (/quatsch/i.test(k.cat || "")) k.cat = "Aktuell"; }
+}
+
+/* ---------- 4b. Debatten: strittige Fragen über viele Meldungen und Kommentare hinweg ---------- */
+const DEB = (state.debates ||= {});
+const DEB_RUN = +(process.env.DEBATES_PER_RUN || 3);
+const DEB_DAYS = 21;
+const POLCATS = /politik|soziales|migration|sicherheit|außenpolitik|klima|wirtschaft|rente|wohnen|verkehr|bildung|gesundheit|justiz|technik|aktuell/i;
+for (const [id, o] of Object.entries(state.opinions || {})) if (NOW - o.ts > 4 * 864e5) delete state.opinions[id];
+const sourcesOfItems = (items) => { const out = {}; items.forEach((x, i) => { const s = SRC[x.src]; out[`s${i + 1}`] = { o: s.name, t: x.title, u: x.url, d: iso(x.ts), lean: s.lean }; }); return out; };
+function promptDebate(frage, items) {
+  const lines = items.map((x, i) => { const s = SRC[x.src]; return `[s${i + 1}] ${s.name} (${s.kind === "meinung" ? "Kommentar" : "Meldung"}, Grundtendenz ${s.lean}): ${x.title} — ${x.teaser.slice(0, 500)}`; }).join("\n");
+  return `Du bist Redakteur der Nachrichten-App "Zwei Seiten". Baue zur Streitfrage "${frage}" eine Debatten-Karte komplett auf Deutsch als JSON. Grundlage sind NUR die Meldungen und Kommentare unten.
+
+REGELN
+- Alles auf Deutsch, eigene Worte, keine Sätze übernehmen, keine Zitate über 8 Wörter.
+- Nur Fakten und Positionen, die in den Texten unten stehen. Nichts aus eigenem Wissen ergänzen.
+- Drei Seiten: "L" = eher linke Position, "M" = Mitte (z. B. Regierungslinie, Kompromiss, neutrale Fachleute), "R" = eher rechte Position. Jede Position nur Akteuren oder Kommentatoren zuschreiben, die sie laut Text vertreten (in "who" nennen, z. B. "Grüne und Sozialverbände" oder "Kommentar im Spiegel"). Einordnung nach Inhalt und Akteuren, nicht nach dem Medium.
+- Alle drei Seiten gleich lang und gleich fair, jeweils mit den stärksten Argumenten ihrer Vertreter. Jede Aussage mit Schlüssel (s1, s2 …).
+- Gibt es in den Texten nicht für alle drei Seiten belegbare Positionen, antworte nur {"typ":"abbruch"}.
+- title: die Streitfrage als Frage, höchstens 70 Zeichen. lead: 2–3 neutrale Sätze zum Stand, höchstens 380 Zeichen.
+- cat: eine aus [${CATS}]. icon: eines aus [${ICONS}].
+- bild: englischer Suchbegriff (2–4 Wörter) für ein Foto eines Ortes, Gebäudes, Gegenstands oder Symbols zum Thema. NIEMALS Personen, Logos oder Parteisymbole. Sonst "".
+
+JSON-FORMAT
+{"typ":"debatte","cat":"…","icon":"…","bild":"…","title":"…","lead":"…","facts":[["Label","Wert","s1"]],
+ "L":{"who":"Vertreten u. a. von …","thesis":"kurzer Satz","a":[["Stichwort","Ein Satz.","s1"],["…","…","s2"],["…","…","s3"]],"long":["Absatz","Absatz"]},
+ "M":{…gleich…},"R":{…gleich…}}
+
+TEXTE
+${lines}`;
+}
+if (hasAI && !aiDown && DEB_RUN > 0) {
+  const seenIds = new Set(), pool = [];
+  for (const c of Object.values(cards)) {
+    if (NOW - c.updated > 72 * 3600e3) continue;
+    if (c.card && (c.card.typ === "quatsch" || !POLCATS.test(c.card.cat || ""))) continue;
+    for (const x of c.items) if (SRC[x.src] && !seenIds.has(x.id)) { seenIds.add(x.id); pool.push(x); }
+  }
+  for (const o of Object.values(state.opinions || {})) if (SRC[o.src] && !seenIds.has(o.id)) { seenIds.add(o.id); pool.push(o); }
+  pool.sort((a, b) => (SRC[b.src].kind === "meinung") - (SRC[a.src].kind === "meinung") || b.ts - a.ts);
+  const list = pool.slice(0, 240), byKey = new Map(list.map((x, i) => [`m${i + 1}`, x]));
+  const known = Object.values(DEB).map((d) => d.card?.title).filter(Boolean).slice(-100);
+  const plan = `Du planst Debatten für eine Nachrichten-App. Unten stehen aktuelle Meldungen und Kommentare (Schlüssel m1, m2 …). Finde bis zu ${DEB_RUN + 2} WIRKLICH UMSTRITTENE politische oder gesellschaftliche Fragen (Deutschland, USA oder international), bei denen in diesen Texten erkennbar verschiedene Lager (Parteien, Regierung, Opposition, Verbände, Kommentatoren) unterschiedliche Positionen vertreten. Keine reinen Ereignisse ohne Streit, kein Sport, keine Unglücke.
+Nicht wiederholen (gibt es schon): ${known.join(" | ") || "–"}
+Wähle pro Frage 5–14 passende Schlüssel, möglichst aus Medien unterschiedlicher Richtung und mit Kommentaren.
+Antworte als JSON: {"debatten":[{"frage":"…?","region":"de|us|welt","texte":["m3","m17"]}]}
+
+TEXTE
+${list.map((x, i) => `m${i + 1} [${SRC[x.src].name}, ${SRC[x.src].lean}${SRC[x.src].kind === "meinung" ? ", Kommentar" : ""}] ${x.title}`).join("\n")}`;
+  let plans = [];
+  try { const r = await ai(plan); plans = JSON.parse(r.text.replace(/^```(json)?|```$/g, "").trim()).debatten || []; await sleep(4500); }
+  catch (e) { status.ai.note = "Debattenplanung: " + String(e.message).slice(0, 120); }
+  let made = 0;
+  for (const p of plans) {
+    if (made >= DEB_RUN || aiDown) break;
+    const items = [...new Set((p.texte || []).filter((k) => byKey.has(k)))].map((k) => byKey.get(k)).slice(0, 14);
+    if (!p.frage || items.length < 4 || new Set(items.map((x) => SRC[x.src].lean)).size < 2) continue;
+    try {
+      const r = await ai(promptDebate(p.frage, items)); await sleep(4500);
+      const card = JSON.parse(r.text.replace(/^```(json)?|```$/g, "").trim());
+      if (card.typ !== "debatte") { status.ai.debFailed = (status.ai.debFailed || 0) + 1; continue; }
+      const err = validate(card, items.length);
+      if (err) { status.ai.debFailed = (status.ai.debFailed || 0) + 1; log(`Debatte verworfen (${err}): ${p.frage}`); continue; }
+      const img = imgBudget-- > 0 ? await commonsImage(card.bild) : null; delete card.bild; if (img) card.img = img;
+      const reg = ["de", "us", "welt"].includes(p.region) ? p.region : "de";
+      const id = "deb-" + hash(p.frage + NOW);
+      DEB[id] = { id, created: NOW, updated: NOW, items: items.map((x) => ({ ...x, teaser: x.teaser.slice(0, 200) })), card: { ...card, sources: sourcesOfItems(items), region: reg, ai: true } };
+      made++; status.ai.debates = (status.ai.debates || 0) + 1;
+    } catch (e) { status.ai.note = "Debatte: " + String(e.message).slice(0, 120); }
+  }
+}
+for (const [id, d] of Object.entries(DEB)) if (NOW - d.created > DEB_DAYS * 864e5) delete DEB[id];
+for (const d of Object.values(DEB)) { const im = d.card?.img; if (im && (PERSONISH.test(decodeURIComponent(im.page || "").replace(/_/g, " ")) || /logo|emblem|coat_of_arms|wappen|flag_of/i.test(decodeURIComponent(im.page || "")))) delete d.card.img; }
 
 // Bilder an bestehenden Karten nachträglich gegen die Regeln prüfen
 for (const c of Object.values(cards)) {
@@ -395,14 +481,18 @@ const built = Object.values(cards).filter((c) => c.card && (!hasAI || c.gen !== 
 const editorial = (feed.items || []).filter((x) => x.editorial && Date.parse(x.created) > keepCut);
 // feed.json: das Wichtigste und Neueste; archive.json: alles Weitere fürs endlose Scrollen
 const rank = (x) => (x.prio || 1) * 6 - (NOW - Date.parse(x.upd)) / 3600e3;
+const debItems = Object.values(DEB).map((d) => ({ id: d.id, ...d.card, prio: NOW - d.created < 24 * 3600e3 ? 3 : 2, upd: iso(Math.max(...d.items.map((x) => x.ts))), created: iso(d.created), nsrc: new Set(d.items.map((x) => x.src)).size }))
+  .sort((a, b) => Date.parse(b.created) - Date.parse(a.created)).slice(0, 150);
 const all = [...built, ...editorial].sort((a, b) => rank(b) - rank(a));
-const items = all.slice(0, MAX_ITEMS), archive = all.slice(MAX_ITEMS, MAX_ITEMS + MAX_ARCHIVE);
+const nDeb = debItems.length + all.filter((x) => x.typ === "debatte").length;
+const items = [...debItems, ...all.slice(0, Math.max(150, MAX_ITEMS - debItems.length))], archive = all.slice(Math.max(150, MAX_ITEMS - debItems.length)).slice(0, MAX_ARCHIVE);
+status.debatten = nDeb;
 
 writeJSON(`${DATA}/feed.json`, { generated: iso(NOW), ai: status.ai, archive: archive.length, items });
 writeFileSync(`${DATA}/archive.json`, JSON.stringify({ generated: iso(NOW), items: archive }));
 // nicht mehr verwendete Bilder löschen
 if (existsSync(`${DATA}/img`)) {
-  const used = new Set(Object.values(cards).map((c) => c.card?.img?.src?.split("/").pop()).filter(Boolean));
+  const used = new Set([...Object.values(cards), ...Object.values(DEB)].map((c) => c.card?.img?.src?.split("/").pop()).filter(Boolean));
   for (const f of readdirSync(`${DATA}/img`)) if (!used.has(f)) unlinkSync(`${DATA}/img/${f}`);
 }
 writeJSON(`${DATA}/state.json`, state);

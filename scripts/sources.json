@@ -1,5 +1,5 @@
 {
- "_hinweis": "lean = Grundtendenz des Mediums (links, mitte-links, mitte, mitte-rechts, rechts). Sie sorgt nur dafür, dass Medien verschiedener Richtungen gelesen werden. Welche Position auf einer Karte als links/Mitte/rechts erscheint, entscheidet die KI anhand der Akteure, nicht des Mediums. kind: news | quatsch. Quellen, die dauerhaft fehlschlagen, stehen in data/status.json.",
+ "_hinweis": "lean = Grundtendenz des Mediums (links, mitte-links, mitte, mitte-rechts, rechts). Sie sorgt nur dafür, dass Medien verschiedener Richtungen gelesen werden. Welche Position auf einer Karte als links/Mitte/rechts erscheint, entscheidet die KI anhand der Akteure, nicht des Mediums. kind: news | quatsch (Kandidaten, die KI entscheidet) | meinung (Kommentare, nur für Debatten). Quellen, die dauerhaft fehlschlagen, stehen in data/status.json.",
  "sources": [
   {
    "id": "tagesschau",
@@ -311,6 +311,116 @@
    "lang": "en",
    "lean": "mitte",
    "kind": "news"
+  },
+  {
+   "id": "spiegel-meinung",
+   "name": "Spiegel Meinung",
+   "type": "rss",
+   "url": "https://www.spiegel.de/meinung/index.rss",
+   "region": "de",
+   "lang": "de",
+   "lean": "mitte-links",
+   "kind": "meinung"
+  },
+  {
+   "id": "zeit-politik",
+   "name": "Zeit Politik",
+   "type": "rss",
+   "url": "https://newsfeed.zeit.de/politik/index",
+   "region": "de",
+   "lang": "de",
+   "lean": "mitte-links",
+   "kind": "meinung"
+  },
+  {
+   "id": "freitag",
+   "name": "der Freitag",
+   "type": "rss",
+   "url": "https://www.freitag.de/@@RSS",
+   "region": "de",
+   "lang": "de",
+   "lean": "links",
+   "kind": "meinung"
+  },
+  {
+   "id": "tagesspiegel-meinung",
+   "name": "Tagesspiegel Meinung",
+   "type": "rss",
+   "url": "https://www.tagesspiegel.de/contentexport/feed/meinung",
+   "region": "de",
+   "lang": "de",
+   "lean": "mitte",
+   "kind": "meinung"
+  },
+  {
+   "id": "welt-debatte",
+   "name": "Welt Debatte",
+   "type": "rss",
+   "url": "https://www.welt.de/feeds/section/debatte.rss",
+   "region": "de",
+   "lang": "de",
+   "lean": "mitte-rechts",
+   "kind": "meinung"
+  },
+  {
+   "id": "nzz-meinung",
+   "name": "NZZ Meinung",
+   "type": "rss",
+   "url": "https://www.nzz.ch/meinung.rss",
+   "region": "de",
+   "lang": "de",
+   "lean": "mitte-rechts",
+   "kind": "meinung"
+  },
+  {
+   "id": "cicero",
+   "name": "Cicero",
+   "type": "rss",
+   "url": "https://www.cicero.de/rss.xml",
+   "region": "de",
+   "lang": "de",
+   "lean": "rechts",
+   "kind": "meinung"
+  },
+  {
+   "id": "nyt-opinion",
+   "name": "New York Times Opinion",
+   "type": "rss",
+   "url": "https://rss.nytimes.com/services/xml/rss/nyt/Opinion.xml",
+   "region": "us",
+   "lang": "en",
+   "lean": "mitte-links",
+   "kind": "meinung"
+  },
+  {
+   "id": "guardian-opinion",
+   "name": "Guardian Opinion",
+   "type": "rss",
+   "url": "https://www.theguardian.com/commentisfree/rss",
+   "region": "welt",
+   "lang": "en",
+   "lean": "links",
+   "kind": "meinung"
+  },
+  {
+   "id": "thehill-opinion",
+   "name": "The Hill Opinion",
+   "type": "rss",
+   "url": "https://thehill.com/opinion/feed/",
+   "region": "us",
+   "lang": "en",
+   "lean": "mitte",
+   "kind": "meinung"
+  },
+  {
+   "id": "fox-opinion",
+   "name": "Fox News Opinion",
+   "type": "rss",
+   "url": "https://moxie.foxnews.com/google-publisher/opinion.xml",
+   "region": "us",
+   "lang": "en",
+   "lean": "rechts",
+   "kind": "meinung"
   }
  ]
 }
