@@ -250,7 +250,7 @@ function wire(art, it) {
 function infoCard(html, cls = "done") { const el = document.createElement("section"); el.className = cls; el.innerHTML = html; return el; }
 function doneCard() {
   const quatsch = ITEMS.some((i) => i.typ === "quatsch") && filter !== "quatsch";
-  const el = infoCard(`<div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="cat">Geschafft</div><h2>Du bist auf dem neuesten Stand.</h2><p class="lead">Neue Meldungen kommen etwa alle 30 Minuten dazu. Wenn du weiterscrollst, siehst du ältere Karten, sortiert nach deinen Interessen.</p>${quatsch ? `<button id="toQuatsch">Zum Quatsch zum Abschalten</button>` : ""}<button id="toTop">Nochmal von oben</button>`);
+  const el = infoCard(`<div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="cat">Geschafft</div><h2>Du bist auf dem neuesten Stand.</h2><p class="lead">Neue Meldungen kommen etwa jede Stunde dazu. Wenn du weiterscrollst, siehst du ältere Karten, sortiert nach deinen Interessen.</p>${quatsch ? `<button id="toQuatsch">Zum Quatsch zum Abschalten</button>` : ""}<button id="toTop">Nochmal von oben</button>`);
   el.querySelector("#toTop").onclick = () => feed.scrollTo({ top: 0, behavior: "smooth" });
   const q = el.querySelector("#toQuatsch"); if (q) q.onclick = () => setFilter("quatsch");
   return el;

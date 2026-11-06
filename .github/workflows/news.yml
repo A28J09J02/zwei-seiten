@@ -2,7 +2,7 @@ name: Nachrichten aktualisieren
 
 on:
   schedule:
-    - cron: "7,37 * * * *"   # alle 30 Minuten (UTC), krumme Minuten wegen Last zur vollen Stunde
+    - cron: "7 * * * *"   # stündlich (UTC), krumme Minute wegen Last zur vollen Stunde; schont das kostenlose KI-Kontingent
   workflow_dispatch:
     inputs:
       debatten:
@@ -29,7 +29,7 @@ jobs:
     timeout-minutes: 15
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy2.outputs.page_url }}
     steps:
       - name: App-Code holen
         uses: actions/checkout@v4
@@ -87,4 +87,11 @@ jobs:
         with:
           path: _site
       - id: deploy
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Kurz warten, falls noch eine Veröffentlichung läuft
+        if: steps.deploy.outcome == 'failure'
+        run: sleep 90
+      - id: deploy2
+        if: steps.deploy.outcome == 'failure'
         uses: actions/deploy-pages@v4
