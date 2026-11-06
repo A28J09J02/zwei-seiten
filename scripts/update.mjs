@@ -492,7 +492,8 @@ const editorial = seedItems.filter((x) => x.editorial && Date.parse(x.created) >
 const rank = (x) => (x.prio || 1) * 6 - (NOW - Date.parse(x.upd)) / 3600e3;
 const debItems = Object.values(DEB).map((d) => ({ id: d.id, ...d.card, prio: NOW - d.created < 24 * 3600e3 ? 3 : 2, upd: iso(Math.max(...d.items.map((x) => x.ts))), created: iso(d.created), nsrc: new Set(d.items.map((x) => x.src)).size }))
   .sort((a, b) => Date.parse(b.created) - Date.parse(a.created)).slice(0, 150);
-const all = [...built, ...editorial].sort((a, b) => rank(b) - rank(a));
+debItems.push(...editorial);                       // redaktionelle Debatten gehören immer in den Feed
+const all = [...built].sort((a, b) => rank(b) - rank(a));
 const nDeb = debItems.length + all.filter((x) => x.typ === "debatte").length;
 const items = [...debItems, ...all.slice(0, Math.max(150, MAX_ITEMS - debItems.length))], archive = all.slice(Math.max(150, MAX_ITEMS - debItems.length)).slice(0, MAX_ARCHIVE);
 status.debatten = nDeb;
