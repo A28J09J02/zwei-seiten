@@ -90,9 +90,10 @@ function mediaHTML(it) {
 function headPanel(it, reason) {
   const facts = (it.facts || []).length ? `<ul class="facts">${it.facts.slice(0, 3).map((f) => `<li><span>${esc(f[0])}</span><b>${esc(f[1])}</b></li>`).join("")}</ul>` : "";
   const pts = it.typ !== "debatte" ? (it.points || []).slice(0, 3) : [];
+  const sides = it.typ === "debatte" ? `<ul class="preview">${["L", "M", "R"].filter((k) => it[k]).map((k) => `<li class="${SIDES[k].cls}"><i class="dot"></i><span><b>${SIDES[k].name}</b>${esc(it[k].thesis)}</span></li>`).join("")}</ul>` : "";
   const points = pts.length ? `<ul class="points">${pts.map((p) => `<li><span>${esc(p[0])}</span><small>${esc(srcName(it, p[1]))}</small></li>`).join("")}</ul>` : "";
   return `<section class="panel head">${mediaHTML(it)}${whyHTML(it, reason)}
-   <h2>${esc(it.title)}</h2>${it.lead ? `<p class="lead clamp">${esc(it.lead)}</p>` : ""}<div class="body">${facts}${points}</div></section>`;
+   <h2>${esc(it.title)}</h2>${it.lead ? `<p class="lead clamp">${esc(it.lead)}</p>` : ""}<div class="body">${facts}${points}${sides}</div></section>`;
 }
 function sidePanel(it, k) {
   const d = it[k], s = SIDES[k];
