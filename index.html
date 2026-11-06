@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Zwei Seiten</title>
+<meta name="description" content="Nachrichten aus Deutschland, den USA und der Welt – bei Debatten aus linker, mittiger und rechter Sicht, immer mit Quellen.">
+<meta name="theme-color" content="#fbfbfc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161b" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Zwei Seiten">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div class="app" id="app">
+  <div class="top">
+    <header>
+      <div class="brand"><i><b></b><b></b><b></b></i>Zwei Seiten</div>
+      <button class="stand" id="foryou">Für dich</button>
+    </header>
+    <nav class="filters" id="filters" aria-label="Filter">
+      <button data-f="alle" class="on">Alle</button>
+      <button data-f="de">Deutschland</button>
+      <button data-f="us">USA</button>
+      <button data-f="welt">Welt</button>
+      <button data-f="debatte">Debatten</button>
+      <button data-f="quatsch">Quatsch</button>
+    </nav>
+  </div>
+  <main class="feed" id="feed"><section class="status"><div class="cat">Lädt</div><h2>Neueste Nachrichten werden geholt …</h2></section></main>
+  <div class="scrim" id="scrim" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+    <div class="sheet-head"><div class="side" id="sheet-side"></div><button id="close">Schließen</button></div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </section>
+</div>
+<script src="app.js?v=1"></script>
+</body>
+</html>

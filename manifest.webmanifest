@@ -1,0 +1,16 @@
+{
+  "name": "Zwei Seiten",
+  "short_name": "Zwei Seiten",
+  "description": "Nachrichten aus Deutschland, den USA und der Welt – bei Debatten aus linker, mittiger und rechter Sicht.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbfbfc",
+  "theme_color": "#fbfbfc",
+  "lang": "de",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,753 @@
+{
+ "generated": "2026-11-06T10:52:18.011Z",
+ "items": [
+  {
+   "id": "red-wehrdienst",
+   "typ": "debatte",
+   "editorial": true,
+   "ai": false,
+   "region": "de",
+   "cat": "Sicherheit",
+   "icon": "shield",
+   "prio": 2,
+   "title": "Freiwilliger Dienst oder zurück zur Wehrpflicht?",
+   "lead": "Seit 1. Januar 2026 gilt der neue Wehrdienst. Er ist freiwillig, aber 18-jährige Männer müssen einen Fragebogen ausfüllen, und ab Jahrgang 2008 gibt es wieder eine Pflicht zur Musterung. Offen ist, ob daraus wieder eine echte Pflicht wird.",
+   "facts": [
+    [
+     "Sold",
+     "mind. 2.600 € brutto",
+     "breg_wd"
+    ],
+    [
+     "Personalziel 2035",
+     "460.000 inkl. Reserve",
+     "breg_wd"
+    ],
+    [
+     "Abstimmung Bundestag",
+     "323 Ja · 272 Nein",
+     "epd_wd"
+    ]
+   ],
+   "L": {
+    "who": "Vertreten u. a. von der Bildungsgewerkschaft GEW und protestierenden Schülerinnen und Schülern",
+    "thesis": "Kein Zwang für junge Menschen.",
+    "a": [
+     [
+      "Entscheidungsfreiheit",
+      "Die GEW lehnt das Gesetz ab, weil Pflichtdienste stark in die Lebensplanung junger Menschen eingreifen.",
+      "epd_wd"
+     ],
+     [
+      "Protest",
+      "Am Tag der Abstimmung gingen Tausende Schüler in rund 90 Städten auf die Straße, in Berlin über 3.000.",
+      "epd_wd"
+     ],
+     [
+      "Kaum Bereitschaft",
+      "Laut einer DeZIM-Umfrage würden nur 14 % der 18- bis 28-Jährigen selbst zur Bundeswehr gehen.",
+      "epd_wd"
+     ]
+    ],
+    "long": [
+     "Für Kritiker auf der linken Seite ist schon die Musterungspflicht ein Schritt in die falsche Richtung. Die Gewerkschaft GEW argumentiert, dass Pflichtdienste tief in die Freiheit junger Menschen eingreifen.",
+     "Dass viele Jugendliche das ähnlich sehen, zeigten die Schulstreiks am Tag der Abstimmung in rund 90 Städten. Eine Umfrage des DeZIM-Instituts zeigt außerdem eine Lücke: Eine Mehrheit der Befragten findet eine Wehrpflicht grundsätzlich gut, aber nur 14 % der jungen Erwachsenen würden selbst dienen."
+    ]
+   },
+   "M": {
+    "who": "Linie der Bundesregierung und von Verteidigungsminister Pistorius (SPD)",
+    "thesis": "Erst Freiwillige gewinnen, Pflicht nur als Notfallplan.",
+    "a": [
+     [
+      "Anreize",
+      "Mindestens 2.600 € brutto im Monat plus Zuschuss zum Führerschein bei mindestens einem Jahr Dienst.",
+      "breg_wd"
+     ],
+     [
+      "Überblick",
+      "Fragebogen und Musterung sollen zeigen, wer geeignet und motiviert ist.",
+      "breg_wd"
+     ],
+     [
+      "Notbremse",
+      "Eine Bedarfswehrpflicht käme nur per neuem Bundestagsbeschluss, falls die Personalziele verfehlt werden.",
+      "breg_wd"
+     ]
+    ],
+    "long": [
+     "Das beschlossene Gesetz ist ein Kompromiss: Der Dienst bleibt freiwillig, aber der Staat verschafft sich wieder einen Überblick über alle jungen Männer. Frauen können den Fragebogen freiwillig ausfüllen.",
+     "Gelockt wird mit Geld und Vorteilen: mindestens 2.600 € brutto im Monat inklusive Unterkunft und ein Zuschuss zum Führerschein. Der Dienst dauert mindestens sechs Monate.",
+     "Reichen die Freiwilligen nicht, greift keine automatische Pflicht. Der Bundestag müsste per eigenem Gesetz eine Bedarfswehrpflicht beschließen. Damit das überprüfbar bleibt, berichtet die Regierung alle sechs Monate über den Personalstand."
+    ]
+   },
+   "R": {
+    "who": "Vertreten u. a. von großen Teilen der CDU/CSU in der Koalitionsdebatte",
+    "thesis": "Ohne Pflicht wird die Bundeswehr nicht groß genug.",
+    "a": [
+     [
+      "Lücke",
+      "Ziel sind rund 460.000 Soldaten inkl. Reserve, im Oktober 2025 gab es etwa 183.000 aktive.",
+      "zdf_wd"
+     ],
+     [
+      "Losverfahren",
+      "Die Union wollte per Los bestimmen, wer verpflichtet wird. Ein Gutachten von Udo di Fabio hält das für zulässig.",
+      "zdf_wd"
+     ],
+     [
+      "Rückhalt",
+      "In der DeZIM-Umfrage befürworten 58 % der Befragten grundsätzlich eine Wehrpflicht.",
+      "epd_wd"
+     ]
+    ],
+    "long": [
+     "Viele in der Union halten Freiwilligkeit allein für zu wenig. Ihr Hauptargument ist die veränderte Bedrohungslage in Europa. Die Bundeswehr soll auf rund 460.000 Soldaten inklusive Reserve wachsen, im Oktober 2025 gab es etwa 183.000 aktive.",
+     "Die Union schlug deshalb ein Losverfahren vor. Nur so viele Männer wie gebraucht würden eingezogen, wer verweigert, müsste Ersatzdienst leisten. Ein Gutachten des früheren Verfassungsrichters Udo di Fabio hält so ein Modell für verfassungsgemäß. Kritiker sehen darin dagegen ein Problem der Wehrgerechtigkeit.",
+     "Laut einer DeZIM-Umfrage befürworten 58 % der Befragten grundsätzlich eine Wehrpflicht."
+    ]
+   },
+   "sources": {
+    "breg_wd": {
+     "o": "Bundesregierung",
+     "t": "Fragen und Antworten zum neuen Wehrdienst",
+     "u": "https://www.bundesregierung.de/breg-de/aktuelles/antworten-zum-neuen-wehrdienst-2397476",
+     "d": ""
+    },
+    "epd_wd": {
+     "o": "evangelisch.de (epd)",
+     "t": "Bundestag beschließt für 2026: Neuer Wehrdienst bleibt freiwillig",
+     "u": "https://www.evangelisch.de/inhalte/250315/05-12-2025/bundestag-beschliesst-fuer-2026-neuer-wehrdienst-bleibt-freiwillig",
+     "d": "2025-12-05T12:00:00.000Z"
+    },
+    "zdf_wd": {
+     "o": "ZDFheute",
+     "t": "Wehrdienst: Das ist geplant, das ist noch strittig",
+     "u": "https://www.zdfheute.de/politik/deutschland/wehrdienst-plaene-streitpunkte-100.html",
+     "d": "2025-10-16T12:00:00.000Z"
+    }
+   },
+   "upd": "2025-12-05T12:00:00.000Z",
+   "created": "2026-11-06T10:00:00.000Z",
+   "nsrc": 3
+  },
+  {
+   "id": "red-grundsicherung",
+   "typ": "debatte",
+   "editorial": true,
+   "ai": false,
+   "region": "de",
+   "cat": "Soziales",
+   "icon": "euro",
+   "prio": 2,
+   "title": "Grundsicherung statt Bürgergeld: zu hart oder überfällig?",
+   "lead": "Das Bürgergeld wird durch das Grundsicherungsgeld ersetzt. Der Bundestag hat die Reform am 5. März 2026 beschlossen, sie gilt laut Plan ab 1. Juli 2026 schrittweise. Die Regelsätze bleiben gleich, die Regeln werden strenger.",
+   "facts": [
+    [
+     "Regelsatz Alleinstehende",
+     "563 € (unverändert)",
+     "stz_gs"
+    ],
+    [
+     "Erwartete Einsparung 2026",
+     "ca. 86 Mio. €",
+     "ts_gs"
+    ],
+    [
+     "Beschluss Bundestag",
+     "5. März 2026",
+     "par_gs"
+    ]
+   ],
+   "L": {
+    "who": "Vertreten u. a. von Sozialverbänden, Linken, Grünen, Verdi und Teilen der SPD-Basis",
+    "thesis": "Mehr Druck schafft keine Jobs, aber mehr Not.",
+    "a": [
+     [
+      "Soziale Härten",
+      "Sozialverbände und Teile der SPD-Basis befürchten mehr Not bis hin zu Obdachlosigkeit.",
+      "ts_gs"
+     ],
+     [
+      "Rückschritt",
+      "Der Paritätische sieht Fortschritte des Bürgergelds zurückgenommen, die Verschärfungen könnten fast jeden treffen.",
+      "par_gs"
+     ],
+     [
+      "Jobcenter",
+      "Verdi warnt vor zusätzlichem Druck auf die Beschäftigten durch mehr Dokumentation.",
+      "ts_gs"
+     ]
+    ],
+    "long": [
+     "Die Kritik von links richtet sich vor allem gegen die härteren Sanktionen. Wer dreimal einen Termin verpasst, kann nach einer Anhörung alles verlieren, auch die Übernahme der Miete. Sozialverbände und Teile der SPD-Basis befürchten, dass Menschen dadurch im schlimmsten Fall ihre Wohnung verlieren.",
+     "Der Paritätische Gesamtverband kritisiert, dass Verbesserungen aus der Bürgergeld-Zeit zurückgenommen werden, etwa beim Schonvermögen und bei den Wohnkosten.",
+     "Dazu kommt ein praktisches Argument: Die Gewerkschaft Verdi erwartet mehr Bürokratie in den Jobcentern. Und die erhoffte Ersparnis ist laut Regierung gering."
+    ]
+   },
+   "M": {
+    "who": "Linie der Bundesregierung (Arbeitsministerium und Kanzleramt)",
+    "thesis": "Fördern und Fordern, mit Schutzregeln.",
+    "a": [
+     [
+      "Vermittlung zuerst",
+      "Arbeit hat wieder Vorrang, Weiterbildung aber dann, wenn sie mehr Erfolg verspricht.",
+      "ts_gs"
+     ],
+     [
+      "Schutzregeln",
+      "Vor einer kompletten Streichung gibt es eine Anhörung, psychisch Kranke sollen geschützt werden.",
+      "ts_gs"
+     ],
+     [
+      "Geld",
+      "Die Regelsätze bleiben gleich, die erwarteten Einsparungen sind klein.",
+      "ts_gs"
+     ]
+    ],
+    "long": [
+     "Die Reform ist ein Kompromiss der schwarz-roten Koalition. Die Regelsätze ändern sich nicht: 563 € für Alleinstehende, weniger für Partner und Kinder.",
+     "Neu ist vor allem der Ton: Vermittlung in Arbeit hat wieder Vorrang, Weiterbildung bleibt möglich, wenn sie aussichtsreicher ist. Wer Pflichten verletzt, bekommt drei Monate lang 30 % weniger. Gleichzeitig gibt es Schutzregeln wie eine Anhörung und Ausnahmen für psychisch Kranke.",
+     "Finanziell ist die Reform kein großer Spareffekt: Die Regierung rechnet 2026 mit etwa 86 Millionen Euro weniger Ausgaben, später eventuell sogar mit leicht höheren Kosten."
+    ]
+   },
+   "R": {
+    "who": "Vertreten u. a. von CDU/CSU und Kanzler Merz",
+    "thesis": "Wer arbeiten kann, muss mitwirken.",
+    "a": [
+     [
+      "Sanktionen",
+      "Wer Bewerbungen oder Kurse verweigert, erhält drei Monate 30 % weniger, rund 150 € im Monat.",
+      "ts_gs"
+     ],
+     [
+      "Eigenes Vermögen",
+      "Die feste Schonfrist entfällt, eigenes Geld wird zuerst eingesetzt.",
+      "ts_gs"
+     ],
+     [
+      "Eltern",
+      "Eltern müssen ab dem 14. Lebensmonat des Kindes arbeiten, wenn die Betreuung gesichert ist.",
+      "par_gs"
+     ]
+    ],
+    "long": [
+     "Die Union wollte den Begriff Bürgergeld abschaffen. Kanzler Merz betont das Prinzip Fördern und Fordern: Wer arbeiten kann, soll aktiv mitwirken.",
+     "Deshalb gibt es spürbare Konsequenzen bei Pflichtverletzungen und bei versäumten Terminen. Wer Vermögen hat, muss es künftig früher einsetzen, die Grenze richtet sich nach dem Alter.",
+     "Neu ist auch, dass Eltern früher wieder arbeiten müssen, sobald das Kind 14 Monate alt und die Betreuung gesichert ist."
+    ]
+   },
+   "sources": {
+    "ts_gs": {
+     "o": "Tagesspiegel",
+     "t": "Ende des Bürgergelds: Neue Grundsicherung bringt Härten für Arbeitslose",
+     "u": "https://www.tagesspiegel.de/politik/ende-des-burgergelds-neue-grundsicherung-bringt-harten-fur-arbeitslose-15058486.html",
+     "d": "2025-12-17T12:00:00.000Z"
+    },
+    "stz_gs": {
+     "o": "Stuttgarter Zeitung",
+     "t": "Neue Grundsicherung kommt: Wann wird das Bürgergeld abgeschafft?",
+     "u": "https://www.stuttgarter-zeitung.de/wirtschaft/wann-wird-buergergeld-abgeschafft-mhsd-79215069.html",
+     "d": ""
+    },
+    "par_gs": {
+     "o": "Der Paritätische",
+     "t": "Bundestag beschließt Grundsicherungsreform im SGB II",
+     "u": "https://www.der-paritaetische.de/alle-meldungen/bundestag-beschliesst-grundsicherungsreform-im-sgb-ii/",
+     "d": "2026-03-06T12:00:00.000Z"
+    }
+   },
+   "upd": "2026-03-06T12:00:00.000Z",
+   "created": "2026-11-06T10:00:00.000Z",
+   "nsrc": 3
+  },
+  {
+   "id": "red-tempolimit",
+   "typ": "debatte",
+   "editorial": true,
+   "ai": false,
+   "region": "de",
+   "cat": "Verkehr",
+   "icon": "speed",
+   "prio": 2,
+   "title": "Kommt jetzt das Tempolimit auf der Autobahn?",
+   "lead": "Auf rund drei Vierteln der Autobahnen gibt es kein festes Tempolimit. Im April 2026 haben die Grünen im Bundestag 130 km/h beantragt und das auch mit hohen Spritpreisen begründet. Der Antrag liegt in den Ausschüssen.",
+   "facts": [
+    [
+     "ADAC-Mitglieder dafür",
+     "56 % (39 % dagegen)",
+     "adac_tl"
+    ],
+    [
+     "CO₂-Ersparnis 130 km/h (BASt)",
+     "1,3–2,0 Mio. t/Jahr",
+     "adac_tl"
+    ],
+    [
+     "Tote je Mrd. Fahrzeug-km",
+     "Autobahn 1,2 · Landstraße 4,9",
+     "adac_tl"
+    ]
+   ],
+   "L": {
+    "who": "Vertreten u. a. von den Grünen",
+    "thesis": "Spart Sprit, schützt Leben und Klima.",
+    "a": [
+     [
+      "Spritpreise",
+      "Langsameres Fahren senkt den Verbrauch und dämpft so die Preise.",
+      "sz_tl"
+     ],
+     [
+      "Sicherheit",
+      "Laut Grünen fordern auch Polizei und Rettungsdienste ein Limit, um Tote und Schwerverletzte zu verringern.",
+      "sz_tl"
+     ],
+     [
+      "Klima",
+      "Das Umweltbundesamt schätzt bei 120 km/h 4,5 bis 6,7 Mio. t CO₂ weniger pro Jahr.",
+      "adac_tl"
+     ]
+    ],
+    "long": [
+     "Die Grünen sehen im Tempolimit eine Maßnahme, die sofort wirkt und fast nichts kostet. Ihr aktueller Anlass sind die hohen Spritpreise infolge des Iran-Kriegs: Wer langsamer fährt, braucht weniger Kraftstoff.",
+     "Dazu kommen Sicherheit und Klima. Laut Antrag fordern auch Polizei und Rettungsdienste ein Limit. Das Umweltbundesamt hat berechnet, dass 120 km/h jährlich mehrere Millionen Tonnen CO₂ einsparen würde."
+    ]
+   },
+   "M": {
+    "who": "Positionen u. a. des ADAC und der SPD",
+    "thesis": "Gezielt begrenzen statt pauschal.",
+    "a": [
+     [
+      "Gezielte Limits",
+      "Der ADAC will Limits an Unfallschwerpunkten, flexible Steuerung und mehr Kontrollen gegen Drängler.",
+      "adac_tl"
+     ],
+     [
+      "Befristet möglich",
+      "Die SPD warnt davor, die Krise zu nutzen, schließt ein befristetes Limit bei Ölknappheit aber nicht aus.",
+      "sz_tl"
+     ],
+     [
+      "Stimmung kippt",
+      "Eine Mehrheit der ADAC-Mitglieder ist inzwischen für ein generelles Limit.",
+      "adac_tl"
+     ]
+    ],
+    "long": [
+     "Zwischen den Lagern stehen Positionen, die nicht grundsätzlich für oder gegen ein Limit sind. Der ADAC spricht sich gegen ein pauschales Tempolimit aus, will aber gezielte Begrenzungen dort, wo es gefährlich ist, und mehr Kontrollen gegen Drängeln.",
+     "Die SPD hält wenig davon, eine Energiekrise für eine alte Forderung zu nutzen. Ein zeitlich begrenztes Limit bei echter Ölknappheit schließt sie aber nicht aus.",
+     "Interessant: Unter ADAC-Mitgliedern hat sich die Stimmung gedreht. 2026 waren 56 % für ein generelles Limit, früher war die Mehrheit dagegen."
+    ]
+   },
+   "R": {
+    "who": "Vertreten u. a. von CDU/CSU und AfD",
+    "thesis": "Das Problem sind Raser, nicht die freie Fahrt.",
+    "a": [
+     [
+      "Echte Ursachen",
+      "Die Union sieht das Problem eher bei rücksichtslosen Rasern und Handys am Steuer.",
+      "sz_tl"
+     ],
+     [
+      "Sicherste Straße",
+      "Die Autobahn hat 1,2 Tote je Mrd. Fahrzeug-km, Landstraßen 4,9.",
+      "adac_tl"
+     ],
+     [
+      "Kleiner Effekt",
+      "130 km/h spart laut BASt nur 0,9 bis 1,4 % der Verkehrsemissionen.",
+      "adac_tl"
+     ]
+    ],
+    "long": [
+     "Union und AfD lehnen den Antrag ab. Die Union sagt, die eigentliche Gefahr seien Raser und Ablenkung durch das Handy. Andere Unionspolitiker werfen den Grünen vor, immer mehr verbieten zu wollen.",
+     "Die AfD verweist darauf, dass Deutschland trotz fehlendem Limit bei den Verkehrstoten unter dem EU-Durchschnitt liegt. Die Daten zeigen außerdem: Die Autobahn ist der sicherste Straßentyp, die meisten Toten gibt es auf Landstraßen.",
+     "Auch beim Klima sehen Kritiker wenig Wirkung. Laut Bundesanstalt für Straßenwesen spart 130 km/h nur rund 1 % der Emissionen des Straßenverkehrs."
+    ]
+   },
+   "sources": {
+    "sz_tl": {
+     "o": "Schwäbische Zeitung",
+     "t": "Tempolimit auf deutschen Autobahnen: Wird jetzt das Rasen verboten?",
+     "u": "https://www.schwaebische.de/politik/tempolimit-auf-deutschen-autobahnen-wird-jetzt-das-rasen-verboten-4507962",
+     "d": "2026-04-16T12:00:00.000Z"
+    },
+    "adac_tl": {
+     "o": "ADAC (Standpunkt)",
+     "t": "Tempolimit auf Autobahnen",
+     "u": "https://assets.adac.de/image/upload/v1776860121/ADAC-eV/Verkehrspolitik/PDFs/tempolimit-autobahn-adac-sp_efqlnn.pdf",
+     "d": "2026-04-23T12:00:00.000Z"
+    }
+   },
+   "upd": "2026-04-23T12:00:00.000Z",
+   "created": "2026-11-06T10:00:00.000Z",
+   "nsrc": 2
+  },
+  {
+   "id": "red-mietpreisbremse",
+   "typ": "debatte",
+   "editorial": true,
+   "ai": false,
+   "region": "de",
+   "cat": "Wohnen",
+   "icon": "house",
+   "prio": 1,
+   "title": "Hilft die Mietpreisbremse wirklich?",
+   "lead": "In angespannten Wohnungsmärkten darf die Miete bei Neuvermietung höchstens 10 % über der ortsüblichen Vergleichsmiete liegen. Der Bundestag hat die Regel im Juni 2025 bis Ende 2029 verlängert. Neubauten ab Oktober 2014 sind ausgenommen.",
+   "facts": [
+    [
+     "Obergrenze",
+     "Vergleichsmiete + 10 %",
+     "lto_mp"
+    ],
+    [
+     "Gilt bis",
+     "Ende 2029",
+     "lto_mp"
+    ],
+    [
+     "Abstimmung",
+     "Union, SPD, Grüne dafür · AfD dagegen · Linke Enthaltung",
+     "lto_mp"
+    ]
+   ],
+   "L": {
+    "who": "Vertreten u. a. vom Deutschen Mieterbund und der Linken",
+    "thesis": "Gute Idee, aber voller Schlupflöcher.",
+    "a": [
+     [
+      "Ausnahmen",
+      "Der Mieterbund kritisiert zahlreiche Ausnahmen, etwa bei möblierten Wohnungen.",
+      "lto_mp"
+     ],
+     [
+      "Keine Strafen",
+      "Verstöße haben kaum Folgen. Gefordert werden Bußgelder.",
+      "lto_mp"
+     ],
+     [
+      "Neubau-Stichtag",
+      "Der Mieterbund will nur Neubauten ab 2023 ausnehmen, nicht schon ab 2014.",
+      "lto_mp"
+     ]
+    ],
+    "long": [
+     "Die linke Kritik lautet nicht, dass die Bremse falsch ist, sondern dass sie zu schwach ist. Der Deutsche Mieterbund nennt viele Ausnahmen, die Vermieter nutzen können, zum Beispiel Zuschläge für möblierte Wohnungen.",
+     "Ein weiterer Punkt: Wer zu viel verlangt, muss bisher kaum mit Strafen rechnen. Der Mieterbund fordert deshalb Bußgelder und klarere Regeln.",
+     "Außerdem sind alle Wohnungen ausgenommen, die nach Oktober 2014 erstmals vermietet wurden. Dieser Stichtag sollte nach Ansicht der Mieterseite auf 2023 verschoben werden. Die Linke enthielt sich bei der Abstimmung, ihre Abgeordnete Caren Lay sprach von Etikettenschwindel."
+    ]
+   },
+   "M": {
+    "who": "Linie der Koalition aus Union und SPD, unterstützt von den Grünen",
+    "thesis": "Verlängern, damit Mieter Zeit gewinnen.",
+    "a": [
+     [
+      "Breite Mehrheit",
+      "Union, SPD und Grüne stimmten für die Verlängerung bis 2029.",
+      "lto_mp"
+     ],
+     [
+      "Wirkung moderat",
+      "Selbst die SPD sagt, die Bremse wirke nur begrenzt, sie hätte sich mehr gewünscht.",
+      "lto_mp"
+     ],
+     [
+      "Länder entscheiden",
+      "Welche Gebiete betroffen sind, legen die Länder für höchstens fünf Jahre fest.",
+      "lto_mp"
+     ]
+    ],
+    "long": [
+     "Die Verlängerung war ein klassischer Kompromiss. Union, SPD und Grüne stimmten zu, um die Regel nicht auslaufen zu lassen, auch wenn keiner sie für die große Lösung hält.",
+     "Die SPD räumt ein, dass die Bremse nur moderat wirkt.",
+     "Wichtig ist der Aufbau: Die Bundesländer legen fest, wo der Markt angespannt ist, und zwar jeweils für höchstens fünf Jahre."
+    ]
+   },
+   "R": {
+    "who": "Vertreten u. a. von Haus & Grund, dem CDU-Abgeordneten Luczak und der AfD",
+    "thesis": "Die Bremse schadet mehr, als sie hilft.",
+    "a": [
+     [
+      "Abschreckung",
+      "Haus & Grund sagt, die Bremse schrecke Vermieter ab und Geld für Sanierungen fehle.",
+      "lto_mp"
+     ],
+     [
+      "Nicht treffsicher",
+      "Die Bremse helfe auch gut verdienenden Mietern, kritisiert CDU-Politiker Luczak.",
+      "lto_mp"
+     ],
+     [
+      "Kein Neubau",
+      "Die AfD sagt, die Regel habe keine einzige neue Wohnung geschaffen.",
+      "lto_mp"
+     ]
+    ],
+    "long": [
+     "Von Vermieterseite kommt grundsätzliche Kritik. Der Eigentümerverband Haus & Grund hält die Bremse für überflüssig: Sie schrecke Vermieter ab und es fehle Geld für energetische Sanierungen. Die eigentlichen Kostentreiber seien die Nebenkosten.",
+     "Der CDU-Abgeordnete Jan-Marco Luczak kritisiert, dass die Bremse allen hilft, auch wohlhabenden Mietern in teuren Lagen.",
+     "Die AfD stimmte dagegen und hält die Regel für wirkungslos, weil sie keine neue Wohnung schaffe."
+    ]
+   },
+   "sources": {
+    "lto_mp": {
+     "o": "Legal Tribune Online",
+     "t": "Bundestag beschließt neue Laufzeit: Mietpreisbremse bis 2029 verlängert",
+     "u": "https://www.lto.de/recht/nachrichten/n/bundestag-verlaengert-mietpreisbremse-bis-2029",
+     "d": "2025-06-26T12:00:00.000Z"
+    }
+   },
+   "upd": "2025-06-26T12:00:00.000Z",
+   "created": "2026-11-06T10:00:00.000Z",
+   "nsrc": 1
+  },
+  {
+   "id": "red-rente",
+   "typ": "debatte",
+   "editorial": true,
+   "ai": false,
+   "region": "de",
+   "cat": "Rente",
+   "icon": "clock",
+   "prio": 3,
+   "title": "Länger arbeiten für eine stabile Rente?",
+   "lead": "Eine Rentenkommission hat im Juni 2026 ihre Vorschläge vorgelegt: Rentenalter ab 2032 an die Lebenserwartung koppeln und die Rente mit 63 abschaffen. Das Kabinett soll möglichst noch 2026 entscheiden, der Bundestag wohl erst 2027.",
+   "facts": [
+    [
+     "Rentenniveau (beschlossen)",
+     "48 % bis 2031",
+     "stz_re"
+    ],
+    [
+     "Modell 2:1",
+     "8 Monate mehr arbeiten, 4 Monate mehr Rente je Jahr Lebenserwartung",
+     "zdf_re"
+    ],
+    [
+     "Bundestag",
+     "voraussichtlich Frühjahr 2027",
+     "stz_re"
+    ]
+   ],
+   "L": {
+    "who": "Vertreten u. a. von Gewerkschaften wie dem DGB",
+    "thesis": "Die Reformpläne sind sozial verfehlt.",
+    "a": [
+     [
+      "Gewerkschaften",
+      "DGB-Chefin Fahimi nennt die Reformpläne der Regierung ökonomisch und sozial verfehlt.",
+      "zdf_re"
+     ],
+     [
+      "45 Jahre",
+      "Das Ende der abschlagsfreien Rente nach 45 Beitragsjahren ist in der Koalition umstritten.",
+      "stz_re"
+     ],
+     [
+      "Mehr Einzahler",
+      "Auch die Kommission will Verbeamtung auf hoheitliche Aufgaben begrenzen.",
+      "zdf_re"
+     ]
+    ],
+    "long": [
+     "Gewerkschaften lehnen ein höheres Rentenalter ab. DGB-Chefin Yasmin Fahimi hat die Reformpläne der Regierung als ökonomisch und sozial verfehlt bezeichnet.",
+     "Besonders umstritten ist das Aus für die abschlagsfreie Rente nach 45 Beitragsjahren, die vor allem Menschen mit langem Berufsleben betrifft. Hier gibt es auch innerhalb der Koalition Streit.",
+     "Ein Vorschlag der Kommission zielt dagegen auf eine breitere Basis: Verbeamtung soll es nur noch für hoheitliche Aufgaben geben, Bund und Länder sollen Rücklagen für Pensionen bilden."
+    ]
+   },
+   "M": {
+    "who": "Vorschläge der Alterssicherungskommission, in der alle drei Koalitionsparteien vertreten sind",
+    "thesis": "Lasten zwischen Jung und Alt aufteilen.",
+    "a": [
+     [
+      "Kopplung",
+      "Steigt die Lebenserwartung um ein Jahr, wird etwa 8 Monate länger gearbeitet. Eine Rente mit 70 steht nicht im Bericht.",
+      "zdf_re"
+     ],
+     [
+      "Zusatzvorsorge",
+      "Arbeitgeber und Beschäftigte sollen 2 % des Lohns in Fonds einzahlen, nach schwedischem Vorbild.",
+      "zdf_re"
+     ],
+     [
+      "Schon beschlossen",
+      "48 % Rentenniveau bis 2031 und die Aktivrente mit 2.000 € steuerfreiem Hinzuverdienst.",
+      "stz_re"
+     ]
+    ],
+    "long": [
+     "Die Kommission versucht, die Last aufzuteilen. Nach dem sogenannten Zwei-zu-eins-Modell wird ein Jahr mehr Lebenserwartung aufgeteilt: etwa acht Monate mehr Arbeit, vier Monate mehr Rente. Konkrete Altersgrenzen nennt der Bericht nicht, eine Rente mit 70 ist nicht vorgesehen.",
+     "Zusätzlich soll eine kapitalgedeckte Vorsorge aufgebaut werden: Arbeitgeber und Beschäftigte zahlen gemeinsam 2 % des Lohns in Fonds. Ziel ist ein Gesamt-Rentenniveau von 50 % bis 2050.",
+     "Einiges gilt schon: Das Rentenniveau ist bis 2031 bei 48 % gesichert, und seit 2026 dürfen Rentner bis 2.000 € im Monat steuerfrei dazuverdienen."
+    ]
+   },
+   "R": {
+    "who": "Vertreten u. a. von CDU/CSU und Kanzler Merz",
+    "thesis": "Die Reform muss schnell und vollständig kommen.",
+    "a": [
+     [
+      "Tempo",
+      "Kanzler Merz hält an allen Empfehlungen fest und drängt auf schnelle Umsetzung.",
+      "stz_re"
+     ],
+     [
+      "Nachhaltigkeitsfaktor",
+      "Rentenerhöhungen sollen nach 2031 wieder vom Verhältnis Beitragszahler zu Rentnern abhängen.",
+      "zdf_re"
+     ],
+     [
+      "Rente mit 63",
+      "Die abschlagsfreie Frührente soll abgeschafft werden.",
+      "zdf_re"
+     ]
+    ],
+    "long": [
+     "Die Union will die Vorschläge vollständig und zügig umsetzen. Kanzler Merz hält an allen Empfehlungen fest, auch wenn einzelne Punkte noch besprochen werden müssen.",
+     "Ein Kernpunkt ist der Nachhaltigkeitsfaktor: Nach 2031 sollen Rentenerhöhungen wieder davon abhängen, wie viele Beitragszahler auf einen Rentner kommen.",
+     "Auch die abschlagsfreie Rente mit 63 soll nach den Empfehlungen wegfallen."
+    ]
+   },
+   "sources": {
+    "zdf_re": {
+     "o": "ZDFheute",
+     "t": "Rentenkommission: Eintrittsalter soll steigen, Rente mit 63 weg",
+     "u": "https://www.zdfheute.de/politik/deutschland/rente-reform-kommission-vorschlaege-100.html",
+     "d": "2026-06-20T12:00:00.000Z"
+    },
+    "stz_re": {
+     "o": "Stuttgarter Zeitung",
+     "t": "Rentenreform 2026 verzögert sich: Das ist der aktuelle Stand",
+     "u": "https://www.stuttgarter-zeitung.de/politik/rentenreform-2026-verzoegert-sich-das-ist-der-aktuelle-stand-79563419.html",
+     "d": "2026-10-13T12:00:00.000Z"
+    }
+   },
+   "upd": "2026-10-13T12:00:00.000Z",
+   "created": "2026-11-06T10:00:00.000Z",
+   "nsrc": 2
+  },
+  {
+   "id": "red-grenzkontrollen",
+   "typ": "debatte",
+   "editorial": true,
+   "ai": false,
+   "region": "de",
+   "cat": "Migration",
+   "icon": "border",
+   "prio": 3,
+   "title": "Zurückweisungen an der Grenze: wirksam oder rechtswidrig?",
+   "lead": "Seit Mai 2025 kontrolliert die Bundespolizei die Grenzen stärker und weist auch Asylsuchende zurück, außer besonders Schutzbedürftige. Im ersten Halbjahr 2026 betraf das 514 von 1.024 Asylsuchenden an den Landgrenzen. Rechtlich ist das umstritten.",
+   "facts": [
+    [
+     "Asylerstanträge 1. Hj. 2026",
+     "39.646 (−35 %)",
+     "vs_gk"
+    ],
+    [
+     "Unerlaubte Einreisen Landgrenzen",
+     "rund 20.000",
+     "vs_gk"
+    ],
+    [
+     "Davon mit Asylgesuch",
+     "ca. 5 %",
+     "vs_gk"
+    ]
+   ],
+   "L": {
+    "who": "Vertreten u. a. von der Linken und Pro Asyl",
+    "thesis": "Der Staat bricht Europarecht.",
+    "a": [
+     [
+      "Rechtswidrig",
+      "Die Linke wirft dem Innenminister vor, das Recht zu missachten.",
+      "vs_gk"
+     ],
+     [
+      "Europarecht",
+      "Pro Asyl hält die Praxis für europarechtswidrig und fordert ein sofortiges Ende.",
+      "zdf_gk"
+     ],
+     [
+      "Wirkung unklar",
+      "Ob Zurückgewiesene dauerhaft fernbleiben, wird gar nicht erfasst.",
+      "vs_gk"
+     ]
+    ],
+    "long": [
+     "Für Kritiker von links ist das Problem vor allem rechtlich. Die Linke wirft Innenminister Dobrindt vor, es mit dem Recht nicht genau zu nehmen, und hält den Kurs für rechtswidrig. Pro Asyl sieht einen Verstoß gegen Europarecht.",
+     "Sie verweisen auf das Verwaltungsgericht Berlin, das 2025 in einem Eilverfahren drei Zurückweisungen für rechtswidrig erklärt hat.",
+     "Dazu kommt ein inhaltliches Argument: Es wird nicht erfasst, ob Zurückgewiesene später auf anderem Weg einreisen. Ob die Maßnahme wirklich wirkt, sei also gar nicht belegt."
+    ]
+   },
+   "M": {
+    "who": "Einordnung aus Rechtswissenschaft und Justiz",
+    "thesis": "Kontrolle ja, aber rechtssicher.",
+    "a": [
+     [
+      "Gerichtsbeschluss",
+      "Das VG Berlin verlangte ein Dublin-Verfahren vor einer Zurückweisung. Der Beschluss galt nur für drei Personen und war vorläufig.",
+      "zdf_gk"
+     ],
+     [
+      "Begründung fehlt",
+      "Migrationsrechtler Daniel Thym fordert von der Regierung eine solide Begründung.",
+      "zdf_gk"
+     ],
+     [
+      "Kleiner Teil",
+      "Nur rund 5 % der unerlaubt Eingereisten an Landgrenzen stellten ein Asylgesuch.",
+      "vs_gk"
+     ]
+    ],
+    "long": [
+     "Die rechtliche Lage ist offen. Das Verwaltungsgericht Berlin entschied 2025, dass vor einer Zurückweisung geprüft werden muss, welcher EU-Staat zuständig ist. Die Berufung auf eine Notlage reichte dem Gericht nicht, weil sie nicht ausreichend begründet war.",
+     "Der Beschluss gilt aber nur für drei Einzelfälle, andere Gerichte sind nicht daran gebunden. Eine endgültige Klärung könnte der Europäische Gerichtshof bringen.",
+     "Der Konstanzer Rechtswissenschaftler Daniel Thym sieht vor allem die Regierung in der Pflicht, eine belastbare Begründung zu liefern. Die Zahlen zeigen außerdem: Die meisten unerlaubt Eingereisten stellen gar keinen Asylantrag."
+    ]
+   },
+   "R": {
+    "who": "Vertreten u. a. von Innenminister Dobrindt (CSU) und der Union",
+    "thesis": "Zurückweisen ist rechtens und funktioniert.",
+    "a": [
+     [
+      "Festhalten",
+      "Dobrindt hält trotz Gerichtsbeschluss an den Zurückweisungen fest und sieht die Rechtsgrundlage gegeben.",
+      "zdf_gk"
+     ],
+     [
+      "Eurodac",
+      "Bei etwa jedem vierten Asylsuchenden gab es einen Treffer in der EU-Datenbank, er war also schon registriert.",
+      "vs_gk"
+     ],
+     [
+      "Klappt praktisch",
+      "Nur eine Zurückweisung scheiterte, weil ein Nachbarland die Übernahme ablehnte.",
+      "vs_gk"
+     ]
+    ],
+    "long": [
+     "Das Innenministerium unter Alexander Dobrindt (CSU) hält an seinem Kurs fest. Nach ihrer Auffassung ist die Rechtsgrundlage gegeben, die Kontrollen wurden zuletzt erneut um ein halbes Jahr verlängert.",
+     "Die Zahlen liefern dieser Seite Argumente: Viele Asylsuchende waren schon in einem anderen EU-Land registriert, bei etwa jedem vierten gab es einen Treffer in der Eurodac-Datenbank.",
+     "Praktisch funktioniert die Zusammenarbeit mit den Nachbarn laut den Zahlen weitgehend. Im ersten Halbjahr 2026 scheiterte nur eine Zurückweisung, weil ein Nachbarland die Person nicht zurücknahm."
+    ]
+   },
+   "sources": {
+    "vs_gk": {
+     "o": "Volksstimme (dpa)",
+     "t": "An Landgrenzen gut jeder zweite Asylsuchende zurückgewiesen",
+     "u": "https://www.volksstimme.de/deutschland-und-welt/deutschland/an-landgrenzen-gut-jeder-zweite-asylsuchende-zuruckgewiesen-4313468",
+     "d": "2026-09-04T12:00:00.000Z"
+    },
+    "zdf_gk": {
+     "o": "ZDFheute",
+     "t": "Gerichtsbeschluss: Zurückweisungen an Grenze rechtswidrig",
+     "u": "https://www.zdfheute.de/politik/deutschland/grenzkontrolle-zurueckweisung-asyl-urteil-rechtswidrig-100.html",
+     "d": "2025-06-05T12:00:00.000Z"
+    }
+   },
+   "upd": "2026-09-14T12:00:00.000Z",
+   "created": "2026-11-06T10:00:00.000Z",
+   "nsrc": 2
+  }
+ ]
+}

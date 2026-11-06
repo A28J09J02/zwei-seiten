@@ -1,0 +1,7 @@
+{
+  "name": "zwei-seiten",
+  "private": true,
+  "type": "module",
+  "scripts": { "update": "node scripts/update.mjs" },
+  "dependencies": { "fast-xml-parser": "4.5.0" }
+}

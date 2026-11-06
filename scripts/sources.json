@@ -1,0 +1,31 @@
+{
+  "_hinweis": "lean = Grundtendenz des Mediums (links, mitte-links, mitte, mitte-rechts, rechts). Sie sorgt nur dafür, dass Medien verschiedener Richtungen gelesen werden. Welche Position auf einer Karte als links/Mitte/rechts erscheint, entscheidet die KI anhand der Akteure, nicht des Mediums. kind: news | quatsch. Quellen, die dauerhaft fehlschlagen, stehen in data/status.json.",
+  "sources": [
+    { "id": "tagesschau", "name": "tagesschau", "type": "tagesschau", "url": "https://www.tagesschau.de/api2u/homepage/", "region": "de", "lang": "de", "lean": "mitte", "kind": "news", "boost": true },
+    { "id": "spiegel", "name": "Spiegel", "type": "rss", "url": "https://www.spiegel.de/schlagzeilen/index.rss", "region": "de", "lang": "de", "lean": "mitte-links", "kind": "news" },
+    { "id": "zeit", "name": "Zeit Online", "type": "rss", "url": "https://newsfeed.zeit.de/index", "region": "de", "lang": "de", "lean": "mitte-links", "kind": "news" },
+    { "id": "sz", "name": "Süddeutsche Zeitung", "type": "rss", "url": "https://rss.sueddeutsche.de/rss/Topthemen", "region": "de", "lang": "de", "lean": "mitte-links", "kind": "news" },
+    { "id": "taz", "name": "taz", "type": "rss", "url": "https://taz.de/!p4608;rss/", "region": "de", "lang": "de", "lean": "links", "kind": "news" },
+    { "id": "ntv", "name": "n-tv", "type": "rss", "url": "https://www.n-tv.de/rss", "region": "de", "lang": "de", "lean": "mitte", "kind": "news" },
+    { "id": "tagesspiegel", "name": "Tagesspiegel", "type": "rss", "url": "https://www.tagesspiegel.de/contentexport/feed/home", "region": "de", "lang": "de", "lean": "mitte", "kind": "news" },
+    { "id": "faz", "name": "FAZ", "type": "rss", "url": "https://www.faz.net/rss/aktuell/", "region": "de", "lang": "de", "lean": "mitte-rechts", "kind": "news" },
+    { "id": "welt", "name": "Welt", "type": "rss", "url": "https://www.welt.de/feeds/latest.rss", "region": "de", "lang": "de", "lean": "mitte-rechts", "kind": "news" },
+    { "id": "nzz", "name": "NZZ", "type": "rss", "url": "https://www.nzz.ch/recent.rss", "region": "de", "lang": "de", "lean": "mitte-rechts", "kind": "news" },
+    { "id": "spiegel-panorama", "name": "Spiegel Panorama", "type": "rss", "url": "https://www.spiegel.de/panorama/index.rss", "region": "de", "lang": "de", "lean": "mitte-links", "kind": "quatsch" },
+
+    { "id": "npr", "name": "NPR", "type": "rss", "url": "https://feeds.npr.org/1001/rss.xml", "region": "us", "lang": "en", "lean": "mitte-links", "kind": "news" },
+    { "id": "nyt", "name": "New York Times", "type": "rss", "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml", "region": "us", "lang": "en", "lean": "mitte-links", "kind": "news" },
+    { "id": "guardian-us", "name": "Guardian US", "type": "rss", "url": "https://www.theguardian.com/us-news/rss", "region": "us", "lang": "en", "lean": "links", "kind": "news" },
+    { "id": "cbs", "name": "CBS News", "type": "rss", "url": "https://www.cbsnews.com/latest/rss/main", "region": "us", "lang": "en", "lean": "mitte", "kind": "news" },
+    { "id": "thehill", "name": "The Hill", "type": "rss", "url": "https://thehill.com/feed/", "region": "us", "lang": "en", "lean": "mitte", "kind": "news" },
+    { "id": "foxnews", "name": "Fox News", "type": "rss", "url": "https://moxie.foxnews.com/google-publisher/latest.xml", "region": "us", "lang": "en", "lean": "rechts", "kind": "news" },
+    { "id": "nypost", "name": "New York Post", "type": "rss", "url": "https://nypost.com/feed/", "region": "us", "lang": "en", "lean": "mitte-rechts", "kind": "news" },
+    { "id": "nationalreview", "name": "National Review", "type": "rss", "url": "https://www.nationalreview.com/feed/", "region": "us", "lang": "en", "lean": "rechts", "kind": "news" },
+    { "id": "upi-odd", "name": "UPI Odd News", "type": "rss", "url": "https://rss.upi.com/news/odd_news.rss", "region": "us", "lang": "en", "lean": "mitte", "kind": "quatsch" },
+
+    { "id": "bbc-world", "name": "BBC News", "type": "rss", "url": "https://feeds.bbci.co.uk/news/world/rss.xml", "region": "welt", "lang": "en", "lean": "mitte", "kind": "news" },
+    { "id": "dw", "name": "Deutsche Welle", "type": "rss", "url": "https://rss.dw.com/rdf/rss-en-all", "region": "welt", "lang": "en", "lean": "mitte", "kind": "news" },
+    { "id": "aljazeera", "name": "Al Jazeera", "type": "rss", "url": "https://www.aljazeera.com/xml/rss/all.xml", "region": "welt", "lang": "en", "lean": "mitte", "kind": "news" },
+    { "id": "guardian-world", "name": "Guardian World", "type": "rss", "url": "https://www.theguardian.com/world/rss", "region": "welt", "lang": "en", "lean": "mitte-links", "kind": "news" }
+  ]
+}

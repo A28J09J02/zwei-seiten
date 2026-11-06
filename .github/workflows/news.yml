@@ -1,0 +1,79 @@
+name: Nachrichten aktualisieren
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"   # alle 30 Minuten (UTC), krumme Minuten wegen Last zur vollen Stunde
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: news
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: App-Code holen
+        uses: actions/checkout@v4
+
+      - name: Daten-Branch holen (falls vorhanden)
+        run: |
+          mkdir -p data
+          if git ls-remote --exit-code --heads origin data >/dev/null 2>&1; then
+            git fetch --depth 1 origin data
+            git --work-tree=data checkout origin/data -- .
+            git reset -q
+          else
+            cp -r seed/. data/ 2>/dev/null || true
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Quellen abrufen, bündeln, Karten schreiben
+        env:
+          DATA_DIR: data
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: node scripts/update.mjs
+
+      - name: Daten-Branch speichern (nur aktueller Stand, damit das Repo klein bleibt)
+        run: |
+          cd data
+          git init -q -b data
+          git config user.name "zwei-seiten-bot"
+          git config user.email "zwei-seiten-bot@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Daten $(date -u +%Y-%m-%dT%H:%M)Z"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" data
+          rm -rf .git
+
+      - name: Seite zusammenbauen
+        run: |
+          mkdir -p _site/data
+          cp index.html app.js style.css sw.js manifest.webmanifest _site/
+          cp -r icons _site/
+          cp data/feed.json data/status.json _site/data/
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
