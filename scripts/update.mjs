@@ -349,8 +349,8 @@ for (const c of pending) {
 
 // b) deutsche Kurzfassung in Sammelaufrufen für alles, was noch keine KI-Karte hat
 const needShort = pending.filter((c) => c.gen !== "ai" && (c.gen !== "short" || c.newSince > 0)).slice(0, MAX_SHORT);
-for (let i = 0; i < needShort.length && hasAI && !aiDown; i += 20) {
-  const batch = needShort.slice(i, i + 20);
+for (let i = 0; i < needShort.length && hasAI && !aiDown; i += 12) {
+  const batch = needShort.slice(i, i + 12);
   try {
     const res = await ai(promptShort(batch));
     const out = JSON.parse(res.text.replace(/^```(json)?|```$/g, "").trim());
