@@ -271,6 +271,7 @@ function sourcesOf(c) {
 
 /* Bilder: nur frei lizenzierte Fotos von Wikimedia Commons, mit Urheberangabe */
 const FREE = /^(cc0|public domain|pd|cc[ -]by(-sa)?([ -][\d.]+)?)/i;
+const PERSONISH = /portrait|porträt|accepting|_with_|\b(18|19)\d\d\b|mr\.|mrs\.|selfie|headshot/i;
 const NOT_FREE = /\bnc\b|non-?commercial|\bnd\b|noderivs|fair use/i;
 async function commonsImage(term) {
   if (!term || FIXTURES) return null;
@@ -284,6 +285,9 @@ async function commonsImage(term) {
       if (!ii?.thumburl || !FREE.test(lic) || NOT_FREE.test(lic)) continue;
       if (ii.width < 600 || ii.width < ii.height) continue;                       // nur Querformat in brauchbarer Größe
       if (/logo|emblem|coat[_ ]of[_ ]arms|wappen|seal[_ ]of|flag[_ ]of|insignia|signet/i.test(p.title || "")) continue; // keine Logos/Wappen (Marken, irreführend)
+      if (PERSONISH.test(p.title || "")) continue;                                  // historische Aufnahmen/Porträts vermeiden
+      const words = term.toLowerCase().split(/\s+/).filter((w) => w.length >= 4);
+      if (words.length && !words.some((w) => (p.title || "").toLowerCase().includes(w.replace(/s$/, "")))) continue; // Dateiname muss zum Suchbegriff passen
       const cats = (m.Categories?.value || "").toLowerCase();
       if (/portrait|people|men of|women of|politicians|births|deaths/.test(cats)) continue; // keine Personenfotos
       const artist = (m.Artist?.value || "unbekannt").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
@@ -360,7 +364,7 @@ if (!hasAI) status.ai.note = "Kein KI-Schlüssel gesetzt: nur Schlagzeilen.";
 // Bilder an bestehenden Karten nachträglich gegen die Regeln prüfen
 for (const c of Object.values(cards)) {
   const im = c.card?.img; if (!im) continue;
-  if (/logo|emblem|coat_of_arms|wappen|seal_of|flag_of|insignia|signet/i.test(decodeURIComponent(im.page || "")) || /unglück|kriminal|justiz/i.test(c.card.cat || "") || c.card.typ === "quatsch") delete c.card.img;
+  if (/logo|emblem|coat_of_arms|wappen|seal_of|flag_of|insignia|signet/i.test(decodeURIComponent(im.page || "")) || PERSONISH.test(decodeURIComponent(im.page || "").replace(/_/g, " ")) || /unglück|kriminal|justiz/i.test(c.card.cat || "") || c.card.typ === "quatsch") delete c.card.img;
 }
 
 /* ---------- 5. Feed schreiben ---------- */
