@@ -1,0 +1,1 @@
+Pausiert – keine Daten.
