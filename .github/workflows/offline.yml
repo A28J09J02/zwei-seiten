@@ -1,0 +1,24 @@
+name: Offline-Seite
+# Zwei Seiten ist pausiert. Dieser Workflow ersetzt die Seite einmalig durch eine leere Hinweisseite.
+# Wieder einschalten: workflows-pausiert/news.yml zurück nach .github/workflows/ verschieben und diese Datei löschen.
+on:
+  workflow_dispatch:
+permissions:
+  pages: write
+  id-token: write
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - run: |
+          mkdir site
+          printf '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline</title><p style="font:16px system-ui;padding:24px">Diese Seite ist offline.</p>' > site/index.html
+          printf 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.map(c=>caches.delete(c)))).then(()=>self.registration.unregister())));' > site/sw.js
+          printf 'User-agent: *\nDisallow: /\n' > site/robots.txt
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4

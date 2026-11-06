@@ -34,3 +34,7 @@ python3 -m http.server                     # App unter http://localhost:8000
 
 - Inhalte der Tagesschau-API sind nur für private Nutzung freigegeben. Vor einer öffentlichen Bewerbung der App die Bedingungen aller Quellen prüfen.
 - KI-Karten können Fehler enthalten. Jede Karte zeigt, ob sie automatisch zusammengefasst wurde, und verlinkt die Originale.
+
+## Status: pausiert (06.11.2026)
+Die App ist offline: kein Nachrichtenabruf, keine KI-Aufrufe, die Seite zeigt nur „Diese Seite ist offline“.
+Zum Reaktivieren `workflows-pausiert/news.yml` zurück nach `.github/workflows/` verschieben und `offline.yml` löschen – vorher die rechtlichen Punkte klären (keine Teaser veröffentlichen, kein Gemini-Gratis-Tarif, Tagesschau-Quelle, Impressum).
