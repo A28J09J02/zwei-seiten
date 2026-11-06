@@ -8,6 +8,9 @@ on:
       debatten:
         description: "Wie viele neue Debatten in diesem Lauf (Standard 3)"
         default: "3"
+      fachleute:
+        description: "Wie viele Debatten Fachleute zugeordnet bekommen (Standard 6)"
+        default: "6"
   push:
     branches: [main]
 
@@ -56,6 +59,7 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           DEBATES_PER_RUN: ${{ inputs.debatten || '3' }}
+          EXPERT_MATCH_PER_RUN: ${{ inputs.fachleute || '6' }}
         run: node scripts/update.mjs
 
       - name: Daten-Branch speichern (nur aktueller Stand, damit das Repo klein bleibt)

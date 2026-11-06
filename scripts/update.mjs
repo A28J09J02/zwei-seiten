@@ -407,7 +407,7 @@ REGELN
 - Nur Fakten und Positionen, die in den Texten unten stehen. Nichts aus eigenem Wissen ergänzen.
 - Drei Seiten: "L" = eher linke Position, "M" = Mitte (z. B. Regierungslinie, Kompromiss, neutrale Fachleute), "R" = eher rechte Position. Jede Position nur Akteuren oder Kommentatoren zuschreiben, die sie laut Text vertreten (in "who" nennen, z. B. "Grüne und Sozialverbände" oder "Kommentar im Spiegel"). Einordnung nach Inhalt und Akteuren, nicht nach dem Medium.
 - Alle drei Seiten gleich lang und gleich fair, jeweils mit den stärksten Argumenten ihrer Vertreter. Jede Aussage mit Schlüssel (s1, s2 …).
-- Stütze jede Seite möglichst auf Expertenbeiträge (Forschungsinstitute, Thinktanks, Wissenschaftler) und Kommentare, nicht nur auf Meldungen. Nenne die Fachleute oder Institute in "who" (z. B. "DIW und Hans-Böckler-Stiftung" oder "Heritage Foundation").
+- Wenn Expertenbeiträge (Forschungsinstitute, Thinktanks, Wissenschaftler) passen, nutze sie und nenne sie in "who". Sonst reichen Kommentare und Meldungen.
 - Gibt es in den Texten nicht für alle drei Seiten belegbare Positionen, antworte nur {"typ":"abbruch"}.
 - title: die Streitfrage als Frage, höchstens 70 Zeichen. lead: 2–3 neutrale Sätze zum Stand, höchstens 380 Zeichen.
 - cat: eine aus [${CATS}]. icon: eines aus [${ICONS}].
@@ -466,6 +466,40 @@ ${list.map((x, i) => `m${i + 1} [${SRC[x.src].name}, ${SRC[x.src].lean}, ${kindL
         known.push(card.title); made++; madeHere++; status.ai.debates = (status.ai.debates || 0) + 1;
       } catch (e) { status.ai.note = "Debatte: " + String(e.message).slice(0, 120); }
     }
+  }
+}
+/* Fachleute zuordnen: passende Expertenbeiträge je Seite an bestehende Debatten hängen */
+const EX_RUN = +(process.env.EXPERT_MATCH_PER_RUN || 6);
+if (hasAI && !aiDown && EX_RUN > 0) {
+  const experts = Object.values(state.opinions || {}).filter((o) => SRC[o.src]?.kind === "experte").sort((a, b) => b.ts - a.ts).slice(0, 120);
+  const todo = Object.values(DEB).filter((d) => !d.exChecked).sort((a, b) => b.created - a.created).slice(0, EX_RUN);
+  if (experts.length) for (const d of todo) {
+    if (aiDown) break;
+    const c = d.card, ek = new Map(experts.map((x, i) => [`e${i + 1}`, x]));
+    const prompt = `Debatte: "${c.title}"
+Eher links: ${c.L.thesis} (${c.L.who})
+Mitte: ${c.M.thesis} (${c.M.who})
+Eher rechts: ${c.R.thesis} (${c.R.who})
+
+Unten stehen Beiträge von Fachleuten, Instituten und Thinktanks. Ordne nur Beiträge zu, die DIREKT diese Streitfrage behandeln und laut Titel/Anriss erkennbar die jeweilige Position stützen oder fachlich einordnen. Lieber gar nichts zuordnen als etwas Unpassendes. Höchstens 2 pro Seite.
+Antworte als JSON: {"L":["e3"],"M":[],"R":["e9"]}
+
+BEITRÄGE
+${experts.map((x, i) => `e${i + 1} [${SRC[x.src].name}, ${SRC[x.src].lean}] ${x.title} — ${x.teaser.slice(0, 220)}`).join("\n")}`;
+    try {
+      const r = await ai(prompt); await sleep(4500);
+      const m = JSON.parse(r.text.replace(/^```(json)?|```$/g, "").trim());
+      for (const k of ["L", "M", "R"]) {
+        const keys = (Array.isArray(m[k]) ? m[k] : []).filter((x) => ek.has(x)).slice(0, 2);
+        c[k].ex = [];
+        for (const key of keys) {
+          const x = ek.get(key), s = SRC[x.src], sk = `x${hash(x.id).slice(0, 6)}`;
+          c.sources[sk] = { o: s.name, t: x.title, u: x.url, d: iso(x.ts), lean: s.lean, k: "experte" };
+          c[k].ex.push(sk);
+        }
+      }
+      d.exChecked = NOW; status.ai.expertMatched = (status.ai.expertMatched || 0) + ["L", "M", "R"].reduce((n, k) => n + c[k].ex.length, 0);
+    } catch (e) { status.ai.note = "Fachleute: " + String(e.message).slice(0, 120); }
   }
 }
 for (const [id, d] of Object.entries(DEB)) if (NOW - d.created > DEB_DAYS * 864e5) delete DEB[id];

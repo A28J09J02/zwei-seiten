@@ -101,7 +101,7 @@ function sidePanel(it, k) {
   return `<section class="panel ${s.cls}"><div class="side"><i class="dot"></i><span>${s.name}</span></div>
    <p class="who">${esc(d.who)}</p><div class="thesis">${esc(d.thesis)}</div>
    <div class="body"><ul class="args">${(d.a || []).slice(0, 3).map((a) => `<li><b>${esc(a[0])}</b><span>${esc(a[1])}</span><small>${esc(srcName(it, a[2]))}</small></li>`).join("")}</ul></div>
-   ${chipLinks(it, (d.a || []).map((a) => a[2]))}</section>`;
+   ${chipLinks(it, [...(d.ex || []), ...(d.a || []).map((a) => a[2])])}</section>`;
 }
 function chipLinks(it, keys) {
   const rankK = (x) => ({ experte: 0, meinung: 1 })[x.k] ?? 2;
@@ -176,7 +176,7 @@ function openArticle(it, k) {
     return;
   }
   const d = it[k], s = SIDES[k]; bump(it.cat, 2);
-  showSheet(s.cls, `<i class="dot"></i><span>${s.name}</span>`, `<h3 id="sheet-title">${esc(d.thesis)}</h3><p class="who">${esc(d.who)}</p>${srcList(it, (d.a || []).map((a) => a[2]), "Die Artikel zu dieser Position")}<h4>Zusammengefasst</h4>${(d.long || []).map((p) => `<p>${esc(p)}</p>`).join("")}<p class="note">${label(it)}. Die Positionen werden so wiedergegeben, wie ihre Vertreter sie begründen, nicht als Bewertung.</p>`);
+  showSheet(s.cls, `<i class="dot"></i><span>${s.name}</span>`, `<h3 id="sheet-title">${esc(d.thesis)}</h3><p class="who">${esc(d.who)}</p>${(d.ex || []).length ? srcList(it, d.ex, "Das sagen Fachleute") : ""}${srcList(it, (d.a || []).map((a) => a[2]), "Artikel und Kommentare zu dieser Position")}<h4>Zusammengefasst</h4>${(d.long || []).map((p) => `<p>${esc(p)}</p>`).join("")}<p class="note">${label(it)}. Die Positionen werden so wiedergegeben, wie ihre Vertreter sie begründen, nicht als Bewertung.</p>`);
 }
 
 /* ---------- Interessen ---------- */
