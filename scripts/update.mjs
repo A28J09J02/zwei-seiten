@@ -56,7 +56,7 @@ function parse(src, body) {
   };
   if (src.type === "tagesschau") {
     const j = JSON.parse(body);
-    for (const n of [...arr(j.news), ...arr(j.regional)]) {
+    for (const n of arr(j.news)) {
       if (n.type && n.type !== "story") continue;
       push(n.topline ? `${n.topline}: ${n.title}` : n.title, n.firstSentence || "", n.shareURL || n.detailsweb, n.date);
     }
