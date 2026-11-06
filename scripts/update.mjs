@@ -244,7 +244,9 @@ REGELN
 - cat: eine aus [${CATS}]. icon: eines aus [${ICONS}]. quatsch: true NUR wenn die Meldung wirklich lustig, kurios und völlig harmlos ist (zum Lachen). Niemals bei Tod, Verletzten, Verbrechen, Gewalt, Prozessen, Unfällen, Krankheit, Katastrophen, Politik oder Promi-Skandalen.
 - bild: englischer Suchbegriff (2–4 Wörter) für ein Foto eines Ortes, Gebäudes, Gegenstands oder Symbols. NIEMALS Personen, Logos, Parteisymbole, Opfer oder Unglücksorte. Sonst "".
 
-Antworte als JSON-Objekt: {"<ID>":{"title":"…","lead":"…","points":[["Satz.","s1"]],"cat":"…","icon":"…","bild":"…","quatsch":false}, …}
+- witzig: 0–10, wie lustig die Meldung für normale Leser ist (10 = zum Lachen, 0 = ernst). Promi-News, Film-, Serien- und Sportmeldungen sind NICHT witzig.
+
+Antworte als JSON-Objekt: {"<ID>":{"title":"…","lead":"…","points":[["Satz.","s1"]],"cat":"…","icon":"…","bild":"…","quatsch":false,"witzig":0}, …}
 
 EREIGNISSE
 ${blocks}`;
@@ -366,7 +368,7 @@ for (let i = 0; i < needShort.length && hasAI && !aiDown; i += 12) {
       if (!s || !s.title || !s.lead || s.title.length > 110) continue;
       const n = Math.min(6, c.items.length), okKey = (k) => /^s\d+$/.test(k) && +k.slice(1) <= n;
       const pts = (Array.isArray(s.points) ? s.points : []).filter((p) => Array.isArray(p) && p.length === 2 && typeof p[0] === "string" && okKey(p[1])).slice(0, 3);
-      const funny = s.quatsch === true && funnyOK(`${s.title} ${s.lead}`);
+      const funny = s.quatsch === true && +s.witzig >= 7 && funnyOK(`${s.title} ${s.lead}`) && !/promi|film|serie|streaming|konzert|schauspiel|sänger|nfl|nba|fußball|basketball/i.test(`${s.title} ${s.lead}`);
       const typ = funny ? "quatsch" : "meldung", cat = funny ? "Quatsch" : (/quatsch/i.test(s.cat || "") ? "Aktuell" : s.cat || "Aktuell");
       const card = { typ, cat, icon: s.icon || "news", title: s.title, lead: s.lead.slice(0, 420), points: pts, facts: [], short: true };
       if (imgBudget > 0 && typ !== "quatsch" && !/unglück|kriminal/i.test(cat) && s.bild) { imgBudget--; const img = await commonsImage(String(s.bild).slice(0, 60)); if (img) card.img = img; }
@@ -384,7 +386,7 @@ if (!hasAI) status.ai.note = "Kein KI-Schlüssel gesetzt: nur Schlagzeilen.";
 // Bestehende Quatsch-Karten nachprüfen: nur wirklich Lustiges bleibt Quatsch
 for (const c of Object.values(cards)) {
   const k = c.card; if (!k || k.typ !== "quatsch") continue;
-  if (!funnyOK(`${k.title} ${k.lead} ${(k.points || []).map((p) => p[0]).join(" ")}`) || k.short === undefined && !k.ai) { k.typ = "meldung"; if (/quatsch/i.test(k.cat || "")) k.cat = "Aktuell"; }
+  if (!funnyOK(`${k.title} ${k.lead} ${(k.points || []).map((p) => p[0]).join(" ")}`) || /promi|film|serie|streaming|konzert|schauspiel|sänger|nfl|nba|fußball|basketball/i.test(`${k.title} ${k.lead}`) || k.short === undefined && !k.ai) { k.typ = "meldung"; if (/quatsch/i.test(k.cat || "")) k.cat = "Aktuell"; }
 }
 
 /* ---------- 4b. Debatten: strittige Fragen über viele Meldungen und Kommentare hinweg ---------- */
@@ -425,35 +427,41 @@ if (hasAI && !aiDown && DEB_RUN > 0) {
   }
   for (const o of Object.values(state.opinions || {})) if (SRC[o.src] && !seenIds.has(o.id)) { seenIds.add(o.id); pool.push(o); }
   pool.sort((a, b) => (SRC[b.src].kind === "meinung") - (SRC[a.src].kind === "meinung") || b.ts - a.ts);
-  const list = pool.slice(0, 240), byKey = new Map(list.map((x, i) => [`m${i + 1}`, x]));
-  const known = Object.values(DEB).map((d) => d.card?.title).filter(Boolean).slice(-100);
-  const plan = `Du planst Debatten für eine Nachrichten-App. Unten stehen aktuelle Meldungen und Kommentare (Schlüssel m1, m2 …). Finde bis zu ${DEB_RUN + 2} WIRKLICH UMSTRITTENE politische oder gesellschaftliche Fragen (Deutschland, USA oder international), bei denen in diesen Texten erkennbar verschiedene Lager (Parteien, Regierung, Opposition, Verbände, Kommentatoren) unterschiedliche Positionen vertreten. Keine reinen Ereignisse ohne Streit, kein Sport, keine Unglücke.
-Nicht wiederholen (gibt es schon): ${known.join(" | ") || "–"}
+  const known = Object.values(DEB).map((d) => d.card?.title).filter(Boolean).slice(-150);
+  let made = 0;
+  const regions = ["de", "us", "welt"], perRegion = Math.ceil(DEB_RUN / 3);
+  for (const reg of regions) {
+    if (made >= DEB_RUN || aiDown) break;
+    const list = pool.filter((x) => (SRC[x.src].region === reg) || (reg === "welt" && SRC[x.src].region !== "de" && SRC[x.src].kind === "meinung")).slice(0, 220);
+    if (list.length < 8) continue;
+    const byKey = new Map(list.map((x, i) => [`m${i + 1}`, x]));
+    const plan = `Du planst Debatten für eine Nachrichten-App. Unten stehen aktuelle Meldungen und Kommentare (Schlüssel m1, m2 …). Finde bis zu ${perRegion + 3} WIRKLICH UMSTRITTENE politische oder gesellschaftliche Fragen, bei denen in diesen Texten erkennbar verschiedene Lager (Parteien, Regierung, Opposition, Verbände, Kommentatoren) unterschiedliche Positionen vertreten. Keine reinen Ereignisse ohne Streit, kein Sport, keine Unglücke.
+Nicht wiederholen, auch nicht sinngemäß (gibt es schon): ${known.join(" | ") || "–"}
 Wähle pro Frage 5–14 passende Schlüssel, möglichst aus Medien unterschiedlicher Richtung und mit Kommentaren.
-Antworte als JSON: {"debatten":[{"frage":"…?","region":"de|us|welt","texte":["m3","m17"]}]}
+Antworte als JSON: {"debatten":[{"frage":"…?","texte":["m3","m17"]}]}
 
 TEXTE
 ${list.map((x, i) => `m${i + 1} [${SRC[x.src].name}, ${SRC[x.src].lean}${SRC[x.src].kind === "meinung" ? ", Kommentar" : ""}] ${x.title}`).join("\n")}`;
-  let plans = [];
-  try { const r = await ai(plan); plans = JSON.parse(r.text.replace(/^```(json)?|```$/g, "").trim()).debatten || []; await sleep(4500); }
-  catch (e) { status.ai.note = "Debattenplanung: " + String(e.message).slice(0, 120); }
-  let made = 0;
-  for (const p of plans) {
-    if (made >= DEB_RUN || aiDown) break;
-    const items = [...new Set((p.texte || []).filter((k) => byKey.has(k)))].map((k) => byKey.get(k)).slice(0, 14);
-    if (!p.frage || items.length < 4 || new Set(items.map((x) => SRC[x.src].lean)).size < 2) continue;
-    try {
-      const r = await ai(promptDebate(p.frage, items)); await sleep(4500);
-      const card = JSON.parse(r.text.replace(/^```(json)?|```$/g, "").trim());
-      if (card.typ !== "debatte") { status.ai.debFailed = (status.ai.debFailed || 0) + 1; continue; }
-      const err = validate(card, items.length);
-      if (err) { status.ai.debFailed = (status.ai.debFailed || 0) + 1; log(`Debatte verworfen (${err}): ${p.frage}`); continue; }
-      const img = imgBudget-- > 0 ? await commonsImage(card.bild) : null; delete card.bild; if (img) card.img = img;
-      const reg = ["de", "us", "welt"].includes(p.region) ? p.region : "de";
-      const id = "deb-" + hash(p.frage + NOW);
-      DEB[id] = { id, created: NOW, updated: NOW, items: items.map((x) => ({ ...x, teaser: x.teaser.slice(0, 200) })), card: { ...card, sources: sourcesOfItems(items), region: reg, ai: true } };
-      made++; status.ai.debates = (status.ai.debates || 0) + 1;
-    } catch (e) { status.ai.note = "Debatte: " + String(e.message).slice(0, 120); }
+    let plans = [];
+    try { const r = await ai(plan); plans = JSON.parse(r.text.replace(/^```(json)?|```$/g, "").trim()).debatten || []; await sleep(4500); }
+    catch (e) { status.ai.note = "Debattenplanung: " + String(e.message).slice(0, 120); continue; }
+    let madeHere = 0;
+    for (const p of plans) {
+      if (madeHere >= perRegion || made >= DEB_RUN || aiDown) break;
+      const items = [...new Set((p.texte || []).filter((k) => byKey.has(k)))].map((k) => byKey.get(k)).slice(0, 14);
+      if (!p.frage || items.length < 4 || new Set(items.map((x) => SRC[x.src].lean)).size < 2) continue;
+      try {
+        const r = await ai(promptDebate(p.frage, items)); await sleep(4500);
+        const card = JSON.parse(r.text.replace(/^```(json)?|```$/g, "").trim());
+        if (card.typ !== "debatte") { status.ai.debFailed = (status.ai.debFailed || 0) + 1; continue; }
+        const err = validate(card, items.length);
+        if (err) { status.ai.debFailed = (status.ai.debFailed || 0) + 1; log(`Debatte verworfen (${err}): ${p.frage}`); continue; }
+        const img = await commonsImage(card.bild); delete card.bild; if (img) card.img = img;
+        const id = "deb-" + hash(p.frage + NOW);
+        DEB[id] = { id, created: NOW, updated: NOW, items: items.map((x) => ({ ...x, teaser: x.teaser.slice(0, 200) })), card: { ...card, sources: sourcesOfItems(items), region: reg, ai: true } };
+        known.push(card.title); made++; madeHere++; status.ai.debates = (status.ai.debates || 0) + 1;
+      } catch (e) { status.ai.note = "Debatte: " + String(e.message).slice(0, 120); }
+    }
   }
 }
 for (const [id, d] of Object.entries(DEB)) if (NOW - d.created > DEB_DAYS * 864e5) delete DEB[id];
@@ -478,7 +486,8 @@ const built = Object.values(cards).filter((c) => c.card && (!hasAI || c.gen !== 
   const s = score(c);
   return { id: c.id, ...c.card, prio: c.card.typ === "quatsch" ? 1 : s >= 9 ? 3 : s >= 5 ? 2 : 1, upd: iso(Math.max(...c.items.map((x) => x.ts))), created: iso(c.created), nsrc: new Set(c.items.map((x) => x.src)).size };
 });
-const editorial = (feed.items || []).filter((x) => x.editorial && Date.parse(x.created) > keepCut);
+const seedItems = readJSON(new URL("../seed/feed.json", import.meta.url), { items: [] }).items || [];
+const editorial = seedItems.filter((x) => x.editorial && Date.parse(x.created) > keepCut);
 // feed.json: das Wichtigste und Neueste; archive.json: alles Weitere fürs endlose Scrollen
 const rank = (x) => (x.prio || 1) * 6 - (NOW - Date.parse(x.upd)) / 3600e3;
 const debItems = Object.values(DEB).map((d) => ({ id: d.id, ...d.card, prio: NOW - d.created < 24 * 3600e3 ? 3 : 2, upd: iso(Math.max(...d.items.map((x) => x.ts))), created: iso(d.created), nsrc: new Set(d.items.map((x) => x.src)).size }))

@@ -316,7 +316,7 @@
    "id": "spiegel-meinung",
    "name": "Spiegel Meinung",
    "type": "rss",
-   "url": "https://www.spiegel.de/meinung/index.rss",
+   "url": "https://www.spiegel.de/debatte/index.rss",
    "region": "de",
    "lang": "de",
    "lean": "mitte-links",
