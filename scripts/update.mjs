@@ -125,36 +125,57 @@ const region = (c) => { const n = {}; for (const x of c.items) { const r = SRC[x
 const GEMINI = process.env.GEMINI_API_KEY, GROQ = process.env.GROQ_API_KEY;
 let geminiModel = process.env.GEMINI_MODEL || null, aiDown = false;
 
+// Liste geeigneter Flash-Modelle, neueste zuerst; "lite" nur als letzte Reserve.
+let geminiModels = null;
+const busy = new Set();
 async function pickGemini() {
-  if (geminiModel) return geminiModel;
+  if (geminiModels) return geminiModels;
+  let names = [];
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${GEMINI}`);
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${GEMINI}`, { signal: AbortSignal.timeout(20000) });
     const j = await r.json();
-    const names = (j.models || []).filter((m) => (m.supportedGenerationMethods || []).includes("generateContent")).map((m) => m.name.replace("models/", ""))
-      .filter((n) => /flash/.test(n) && !/lite|image|tts|live|audio|embed|exp|preview|thinking/.test(n));
-    const ver = (n) => +((n.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]);
-    names.sort((a, b) => ver(b) - ver(a) || a.length - b.length);
-    geminiModel = names[0] || "gemini-2.5-flash";
-  } catch { geminiModel = "gemini-2.5-flash"; }
-  return geminiModel;
+    names = (j.models || []).filter((m) => (m.supportedGenerationMethods || []).includes("generateContent")).map((m) => m.name.replace("models/", ""))
+      .filter((n) => /^gemini-[\d.]+-flash/.test(n) && !/image|tts|live|audio|embed|exp|preview|thinking/.test(n));
+  } catch {}
+  const ver = (n) => +((n.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]);
+  const lite = (n) => /lite/.test(n) ? 1 : 0;
+  names.sort((a, b) => lite(a) - lite(b) || ver(b) - ver(a) || a.length - b.length);
+  geminiModels = [...new Set([...(geminiModel ? [geminiModel] : []), ...names, "gemini-2.5-flash", "gemini-2.5-flash-lite"])];
+  log("Gemini-Modelle:", geminiModels.join(", "));
+  return geminiModels;
 }
 
 async function callGemini(prompt) {
-  const model = await pickGemini();
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI}`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", temperature: 0.3 } }),
-  });
-  if (r.status === 429) throw Object.assign(new Error("Gemini-Limit erreicht"), { limit: true });
-  if (!r.ok) throw new Error(`Gemini HTTP ${r.status}: ${(await r.text()).slice(0, 200)}`);
-  const j = await r.json();
-  return { text: j.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "", provider: "gemini", model };
+  let last = null, limited = 0;
+  const models = (await pickGemini()).filter((m) => !busy.has(m));
+  for (const model of models) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, signal: AbortSignal.timeout(90000),
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", temperature: 0.3 } }),
+      });
+      if (r.ok) {
+        const j = await r.json();
+        return { text: j.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "", provider: "gemini", model };
+      }
+      last = new Error(`Gemini ${model} HTTP ${r.status}: ${(await r.text()).slice(0, 160)}`);
+      if (r.status === 429) limited++;
+      if (r.status === 401 || r.status === 403) throw last;   // Schlüssel ungültig: andere Modelle helfen nicht
+      busy.add(model);                                         // überlastet/Limit/nicht vorhanden: für diesen Lauf überspringen
+    } catch (e) {
+      if (String(e.message).includes("HTTP 40") && !String(e.message).includes("HTTP 404")) throw e;
+      last = e; busy.add(model);
+    }
+  }
+  if (limited && limited === models.length) throw Object.assign(new Error("Gemini-Limit erreicht"), { limit: true });
+  if (!models.length || busy.size >= (geminiModels || []).length) ai.geminiOff = true;
+  throw last || new Error("kein Gemini-Modell verfügbar");
 }
 
 async function callGroq(prompt) {
   const model = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
   const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ}` },
+    method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ}` }, signal: AbortSignal.timeout(90000),
     body: JSON.stringify({ model, temperature: 0.3, response_format: { type: "json_object" }, messages: [{ role: "user", content: prompt }] }),
   });
   if (r.status === 429) throw Object.assign(new Error("Groq-Limit erreicht"), { limit: true });
