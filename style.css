@@ -163,3 +163,22 @@ p{margin:0;line-height:1.55}
 .media{max-height:30vh;width:100%}
 @media (max-height:700px){.media{max-height:24vh}.head .art{height:72px}.panel h2{font-size:19px}.clamp{-webkit-line-clamp:3}}
 .body li.cut{display:none}
+
+/* --- Version 3: einheitliche Kartenleiste --- */
+.topic .hint{display:none}
+.panel{padding-bottom:84px}
+.cardbar{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;align-items:center;gap:8px;padding:14px max(20px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));background:linear-gradient(to bottom,transparent,var(--phone) 34%)}
+.cardbar .act{font:700 14px var(--body);height:44px;padding:0 16px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap}
+.cardbar .act.primary{background:var(--fg);color:var(--phone);border-color:var(--fg)}
+.cardbar .next{margin-left:auto;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--fg);display:grid;place-items:center;cursor:pointer;flex-shrink:0}
+.cardbar .next svg{width:20px;height:20px}
+.cardbar button:focus-visible{outline:2px solid var(--mid);outline-offset:2px}
+.clamp{-webkit-line-clamp:6}
+@media (max-height:700px){.clamp{-webkit-line-clamp:4}}
+.lead{font-size:16px}
+.stand .cnt{display:inline-block;min-width:18px;margin-left:4px;padding:1px 5px;border-radius:99px;background:var(--left);color:#fff;font-size:10.5px;letter-spacing:0}
+.sheet-body .leadbig{font-size:17px;line-height:1.55}
+.sheet-body p{line-height:1.6}
+.brand{white-space:nowrap;font-size:16px}
+.hbtns .stand{padding:5px 9px;font-size:10.5px;letter-spacing:.06em}
+@media (max-width:360px){.brand{font-size:14px}.hbtns .stand{padding:4px 7px}}

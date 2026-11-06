@@ -55,21 +55,25 @@ function inFilter(it) {
 const newsScore = (it) => it.prio * (ageH(it) < 72 ? 2 : 0.6) + (ageH(it) < 6 ? 2 : ageH(it) < 24 ? 1 : 0) + (it.typ === "debatte" ? 0.5 : 0);
 const userScore = (it) => (st.interest[it.cat] || 0) * 1.4 + (st.interest["r:" + it.region] || 0) * 0.6 + (st.interest["t:" + it.typ] || 0) * 0.4;
 
+const shown = new Set();
 function buildRound(round) {
-  const pool = ITEMS.filter((it) => inFilter(it) && (round === 0 ? !st.seen[it.id] : !!st.seen[it.id]));
-  const byNews = [...pool].sort((a, b) => newsScore(b) - newsScore(a) || Date.parse(b.upd) - Date.parse(a.upd));
+  // Runde 0: alles Ungesehene. Danach: alles, was in dieser Sitzung noch nicht gezeigt wurde (Archiv, Gesehenes).
+  const pool = ITEMS.filter((it) => inFilter(it) && !shown.has(it.id) && (round === 0 ? !st.seen[it.id] : true));
+  const ns = new Map(pool.map((it) => [it.id, newsScore(it)]));
+  const byNews = [...pool].sort((a, b) => ns.get(b.id) - ns.get(a.id) || Date.parse(b.upd) - Date.parse(a.upd));
+  const byUser = [...pool].map((it) => ({ it, s: userScore(it) + ns.get(it.id) * 0.8 + Math.random() * 1.5 })).sort((a, b) => b.s - a.s).map((x) => x.it);
   const out = [], used = new Set();
   const take = (it, reason) => { out.push({ it, reason }); used.add(it.id); };
-  if (round === 0) byNews.slice(0, 2).forEach((it) => take(it, "top"));
+  if (round === 0) byNews.filter((it) => ageH(it) < 24 && it.prio >= 2).slice(0, 6).forEach((it) => take(it, "top"));
+  let a = 0, b = 0;
   while (used.size < pool.length) {
-    if (out.length % 3 === 2) { take(byNews.find((x) => !used.has(x.id)), round ? "seen" : "news"); continue; }
-    const rest = pool.filter((x) => !used.has(x.id));
-    const best = rest.map((it) => ({ it, s: userScore(it) + newsScore(it) * 0.8 + Math.random() })).sort((a, b) => b.s - a.s)[0].it;
-    take(best, round ? "seen" : userScore(best) > 1 ? "fy" : "news");
+    if (out.length % 3 === 2) { while (used.has(byNews[a].id)) a++; take(byNews[a], round ? "more" : "news"); continue; }
+    while (used.has(byUser[b].id)) b++;
+    const it = byUser[b]; take(it, round ? (st.seen[it.id] ? "seen" : "more") : userScore(it) > 1 ? "fy" : "news");
   }
   return out;
 }
-const REASON = { pick: ["Ausgewählt", ""], top: ["Wichtig jetzt", ""], news: ["Aktuell", ""], fy: ["Für dich", "fy"], seen: ["Schon gesehen", "again"] };
+const REASON = { pick: ["Ausgewählt", ""], more: ["Mehr Nachrichten", ""], top: ["Wichtig jetzt", ""], news: ["Aktuell", ""], fy: ["Für dich", "fy"], seen: ["Schon gesehen", "again"] };
 
 /* ---------- Karten ---------- */
 function whyHTML(it, reason) {
@@ -85,25 +89,26 @@ function mediaHTML(it) {
 }
 function headPanel(it, reason) {
   const facts = (it.facts || []).length ? `<ul class="facts">${it.facts.slice(0, 3).map((f) => `<li><span>${esc(f[0])}</span><b>${esc(f[1])}</b></li>`).join("")}</ul>` : "";
-  const pts = it.typ !== "debatte" ? (it.points || []).slice(0, 2) : [];
+  const pts = it.typ !== "debatte" ? (it.points || []).slice(0, 3) : [];
   const points = pts.length ? `<ul class="points">${pts.map((p) => `<li><span>${esc(p[0])}</span><small>${esc(srcName(it, p[1]))}</small></li>`).join("")}</ul>` : "";
-  const n = Object.keys(it.sources || {}).length;
-  const main = it.typ === "debatte" ? `<button class="more primary" data-goto="1">Die drei Seiten ansehen →</button>`
-    : (it.points || []).length || (it.facts || []).length ? `<button class="more primary" data-side="D">Mehr lesen</button>` : "";
   return `<section class="panel head">${mediaHTML(it)}${whyHTML(it, reason)}
-   <h2>${esc(it.title)}</h2>${it.lead ? `<p class="lead clamp">${esc(it.lead)}</p>` : ""}<div class="body">${facts}${points}</div>
-   <div class="actions">${main}<button class="more" data-side="S">${n} ${n === 1 ? "Quelle" : "Quellen"}</button></div></section>`;
+   <h2>${esc(it.title)}</h2>${it.lead ? `<p class="lead clamp">${esc(it.lead)}</p>` : ""}<div class="body">${facts}${points}</div></section>`;
 }
 function sidePanel(it, k) {
   const d = it[k], s = SIDES[k];
   return `<section class="panel ${s.cls}"><div class="side"><i class="dot"></i><span>${s.name}</span></div>
    <p class="who">${esc(d.who)}</p><div class="thesis">${esc(d.thesis)}</div>
-   <div class="body"><ul class="args">${(d.a || []).slice(0, 3).map((a) => `<li><b>${esc(a[0])}</b><span>${esc(a[1])}</span><small>${esc(srcName(it, a[2]))}</small></li>`).join("")}</ul></div>
-   <div class="actions"><button class="more primary" data-side="${k}">Ganzen Beitrag lesen</button></div></section>`;
+   <div class="body"><ul class="args">${(d.a || []).slice(0, 3).map((a) => `<li><b>${esc(a[0])}</b><span>${esc(a[1])}</span><small>${esc(srcName(it, a[2]))}</small></li>`).join("")}</ul></div></section>`;
+}
+// Eine einheitliche Leiste unten an jeder Karte: Hauptaktion, Quellen, Weiter
+function barHTML(it) {
+  const n = Object.keys(it.sources || {}).length;
+  const main = it.typ === "debatte" ? `<button class="act primary" data-act="goto1">Drei Seiten →</button>` : `<button class="act primary" data-act="D">Weiterlesen</button>`;
+  return `<div class="cardbar">${main}<button class="act" data-act="S">${n} ${n === 1 ? "Quelle" : "Quellen"}</button><button class="next" aria-label="Nächste Karte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button></div>`;
 }
 function topicHTML(it, reason) {
   if (it.typ !== "debatte") {
-    return `<article class="topic single ${it.typ}" data-id="${esc(it.id)}"><div class="pan">${headPanel(it, reason)}</div>${barHTML()}</article>`;
+    return `<article class="topic single ${it.typ}" data-id="${esc(it.id)}"><div class="pan">${headPanel(it, reason)}</div>${barHTML(it)}</article>`;
   }
   const v = st.votes[it.id];
   return `<article class="topic" data-id="${esc(it.id)}">
@@ -114,13 +119,11 @@ function topicHTML(it, reason) {
      <div class="scale">${LBL.map((l, j) => `<button data-v="${j}" class="${v === j ? "on" : ""}">${l.replace(" ", "<br>")}</button>`).join("")}</div>
      <div class="legend"><span>links</span><span>rechts</span></div>
      <p class="note">Deine Wahl bleibt auf diesem Gerät. Eine gemeinsame Auswertung aller Stimmen kommt später.</p></section>
-   </div>${barHTML("← wischen für die Seiten")}</article>`;
+   </div>${barHTML(it)}</article>`;
 }
-
-const barHTML = (txt = "") => `<div class="hint"><span class="prog">${txt}</span><button class="next" aria-label="Nächste Karte">Weiter ↓</button></div>`;
 function updateProg() {
-  const left = ITEMS.filter((i) => inFilter(i) && !st.seen[i.id]).length;
-  document.querySelectorAll(".topic .prog").forEach((el) => { if (!el.dataset.fixed) el.textContent = left ? `${left} neue übrig` : "Alles gesehen"; });
+  const left = ITEMS.filter((i) => i.typ !== "quatsch" && !st.seen[i.id]).length;
+  const b = $("overview"); if (b) b.innerHTML = left ? `Übersicht <b class="cnt">${left > 99 ? "99+" : left}</b>` : "Übersicht";
 }
 
 /* ---------- Bottom-Sheet ---------- */
@@ -142,7 +145,7 @@ function openArticle(it, k) {
   if (k === "D") {
     const facts = (it.facts || []).length ? `<ul class="facts">${it.facts.map((f) => `<li><span>${esc(f[0])}</span><b>${esc(f[1])}</b></li>`).join("")}</ul>` : "";
     const pts = (it.points || []).map((p) => `<li><span>${esc(p[0])}</span><small>${esc(srcName(it, p[1]))}</small></li>`).join("");
-    showSheet("", `<span>${esc(it.typ === "quatsch" ? "Quatsch" : "Meldung")}</span>`, `<h3 id="sheet-title">${esc(it.title)}</h3>${it.lead ? `<p>${esc(it.lead)}</p>` : ""}${facts}${pts ? `<ul class="points full">${pts}</ul>` : ""}${imgCredit(it)}${srcList(it, Object.keys(it.sources || {}))}<p class="note">${label(it)} · Stand ${day(it.upd)}</p>`);
+    showSheet("", `<span>${esc(it.typ === "quatsch" ? "Quatsch" : "Meldung")}</span>`, `<h3 id="sheet-title">${esc(it.title)}</h3>${it.lead ? `<p class="leadbig">${esc(it.lead)}</p>` : ""}${facts}${(it.long || []).length ? `<h4>Ausführlich</h4>${it.long.map((x) => `<p>${esc(x)}</p>`).join("")}` : ""}${pts ? `<h4>Das Wichtigste</h4><ul class="points full">${pts}</ul>` : ""}${imgCredit(it)}${srcList(it, Object.keys(it.sources || {}))}<p class="note">${label(it)} · Stand ${day(it.upd)}</p>`);
     return;
   }
   if (k === "S") {
@@ -202,14 +205,21 @@ const io = new IntersectionObserver((es) => es.forEach((e) => {
 
 function wire(art, it) {
   art._it = it;
-  art.querySelectorAll(".more[data-side]").forEach((b) => (b.onclick = () => openArticle(it, b.dataset.side)));
+  let side = "D";
+  const mainBtn = art.querySelector(".act.primary");
+  art.querySelectorAll(".act").forEach((b) => (b.onclick = () => {
+    const a = b.dataset.act;
+    if (a === "goto1") art.querySelector(".pan").scrollTo({ left: art.querySelector(".pan").clientWidth, behavior: "smooth" });
+    else openArticle(it, a);
+  }));
   const nx = art.querySelector(".next"); if (nx) nx.onclick = () => feed.scrollBy({ top: feed.clientHeight, behavior: "smooth" });
-  const prog = art.querySelector(".prog"); if (prog && prog.textContent) prog.dataset.fixed = "1";
   if (it.typ === "debatte") {
     const pan = art.querySelector(".pan"), tabs = [...art.querySelectorAll(".tabs button")], seenSide = new Set();
     art.querySelectorAll("[data-goto]").forEach((b) => (b.onclick = () => pan.scrollTo({ left: pan.clientWidth * +b.dataset.goto, behavior: "smooth" })));
     tabs.forEach((b) => (b.onclick = () => pan.scrollTo({ left: pan.clientWidth * +b.dataset.p, behavior: "smooth" })));
-    pan.addEventListener("scroll", () => { const p = Math.round(pan.scrollLeft / pan.clientWidth); tabs.forEach((b, k) => b.classList.toggle("on", k === p)); if (p >= 1 && p <= 3 && !seenSide.has(p)) { seenSide.add(p); bump(it.cat, 0.5); } }, { passive: true });
+    pan.addEventListener("scroll", () => { const p = Math.round(pan.scrollLeft / pan.clientWidth); tabs.forEach((b, k) => b.classList.toggle("on", k === p));
+      const map = { 0: ["goto1", "Drei Seiten →"], 1: ["L", "Ganzer Beitrag"], 2: ["M", "Ganzer Beitrag"], 3: ["R", "Ganzer Beitrag"], 4: ["goto1", "Seiten nochmal"] };
+      const [act, txt] = map[p] || map[0]; if (mainBtn.dataset.act !== act) { mainBtn.dataset.act = act; mainBtn.textContent = txt; } if (p >= 1 && p <= 3 && !seenSide.has(p)) { seenSide.add(p); bump(it.cat, 0.5); } }, { passive: true });
     art.querySelectorAll(".scale button").forEach((b) => (b.onclick = () => { const v = +b.dataset.v; if (st.votes[it.id] == null) bump(it.cat, 1); st.votes[it.id] = v; saveSt(); art.querySelectorAll(".scale button").forEach((x) => x.classList.toggle("on", x === b)); }));
   }
   io.observe(art);
@@ -228,7 +238,7 @@ function appendMore(n) {
       if (round === 0) { feed.appendChild(doneCard()); io.observe(feed.lastElementChild); round = 1; queue = buildRound(1); if (!queue.length) finished = true; continue; }
       feed.appendChild(infoCard(`<div class="cat">Ende</div><h2>Das war alles.</h2><p class="lead">Mehr gibt es gerade nicht. Schau später wieder rein.</p>`)); finished = true; break;
     }
-    const { it, reason } = queue.shift();
+    const { it, reason } = queue.shift(); shown.add(it.id);
     const wrap = document.createElement("div"); wrap.innerHTML = topicHTML(it, reason);
     const art = wrap.firstElementChild; feed.appendChild(art); wire(art, it); fit(art);
   }
@@ -245,7 +255,7 @@ function fit(art) {
 }
 window.addEventListener("resize", () => document.querySelectorAll(".topic").forEach(fit));
 function resetFeed(startId) {
-  io.disconnect(); dwell.clear(); feed.innerHTML = ""; feed.scrollTop = 0; round = 0; finished = false; queue = buildRound(0);
+  io.disconnect(); dwell.clear(); shown.clear(); feed.innerHTML = ""; feed.scrollTop = 0; round = 0; finished = false; queue = buildRound(0);
   if (startId) { const it = ITEMS.find((x) => x.id === startId); if (it) { queue = queue.filter((q) => q.it.id !== startId); queue.unshift({ it, reason: "pick" }); } }
   if (!queue.length && !ITEMS.some(inFilter)) { feed.appendChild(infoCard(`<div class="cat">Leer</div><h2>Hier ist gerade nichts.</h2><p class="lead">In diesem Filter gibt es noch keine Karten.</p>`, "status")); return; }
   appendMore(3);
@@ -267,6 +277,17 @@ async function load() {
   if (!r.ok) throw new Error("HTTP " + r.status);
   const j = await r.json();
   ITEMS = (j.items || []).filter((i) => i && i.id && i.title); GENERATED = j.generated; AI = j.ai; loadedAt = Date.now();
+  loadArchive();
+}
+// Archiv im Hintergrund nachladen: Stoff fürs endlose Weiterscrollen nach dem Wichtigsten
+async function loadArchive() {
+  try {
+    const r = await fetch("data/archive.json", { cache: "no-store" }); if (!r.ok) return;
+    const have = new Set(ITEMS.map((i) => i.id));
+    for (const i of (await r.json()).items || []) if (i && i.id && i.title && !have.has(i.id)) ITEMS.push(i);
+    if (finished && round >= 1) { finished = false; queue = buildRound(round); feed.lastElementChild?.remove(); appendMore(3); }
+    updateProg();
+  } catch (e) {}
 }
 async function maybeRefresh() {
   if (Date.now() - loadedAt < 10 * 60e3) return;

@@ -6,10 +6,12 @@ import { XMLParser } from "fast-xml-parser";
 
 const DATA = process.env.DATA_DIR || "data";
 const MAX_AI = +(process.env.MAX_AI_PER_RUN || 6);          // höchstens so viele volle KI-Karten pro Lauf
-const MAX_SHORT = +(process.env.MAX_SHORT_PER_RUN || 40);   // Kurzfassungen pro Lauf (in Sammelaufrufen à 20)
+const MAX_SHORT = +(process.env.MAX_SHORT_PER_RUN || 100);  // Kurzfassungen pro Lauf (in Sammelaufrufen à 20)
+const MAX_IMG = +(process.env.MAX_IMG_PER_RUN || 50);       // Bildsuchen pro Lauf
 const MAX_AGE_H = 48;                                       // ältere Meldungen beim Abruf ignorieren
 const KEEP_DAYS = 30;                                       // Karten so lange im Feed halten
-const MAX_ITEMS = 250;                                      // Obergrenze im Feed
+const MAX_ITEMS = 300;                                      // Karten in feed.json (Rest in archive.json)
+const MAX_ARCHIVE = 1500;                                   // Karten in archive.json
 const NOW = Date.now();
 const FIXTURES = process.env.FIXTURES || "";                 // Test: Ordner mit <id>.xml/<id>.json statt Netz
 
@@ -53,7 +55,7 @@ function parse(src, body) {
     title = clean(title); url = text(url).trim(); if (!title || !url) return;
     const d = Date.parse(date); const ts = isNaN(d) ? NOW : Math.min(d, NOW);
     if (NOW - ts > MAX_AGE_H * 3600e3) return;
-    out.push({ id: hash(url), url, title, teaser: clean(teaser).slice(0, 420), ts, src: src.id });
+    out.push({ id: hash(url), url, title, teaser: clean(teaser).slice(0, 700), ts, src: src.id });
   };
   if (src.type === "tagesschau") {
     const j = JSON.parse(body);
@@ -119,7 +121,7 @@ function score(c) {
   return srcs.size * 2 + leans.size + boost - Math.min(6, ageH / 4);
 }
 const isQuatsch = (c) => c.items.every((x) => SRC[x.src]?.kind === "quatsch");
-const eligible = (c) => isQuatsch(c) || new Set(c.items.map((x) => x.src)).size >= 2 || c.items.some((x) => SRC[x.src]?.boost);
+const eligible = (c) => true;  // auch Einzelmeldungen; Gewichtung über score()
 const region = (c) => { const n = {}; for (const x of c.items) { const r = SRC[x.src]?.region || "welt"; n[r] = (n[r] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; };
 
 /* ---------- 4. KI ---------- */
@@ -209,13 +211,15 @@ STRENGE REGELN
 - typ "quatsch" nur für kuriose, harmlose Meldungen zum Schmunzeln (keine Unglücke, keine Opfer).
 - Sonst typ "meldung".
 - cat: eine aus [${CATS}]. icon: eines aus [${ICONS}].
-- title: höchstens 70 Zeichen, bei debatte als Frage. lead: 2 kurze neutrale Sätze, zusammen höchstens 260 Zeichen.
+- title: höchstens 70 Zeichen, bei debatte als Frage. lead: 2–3 neutrale Sätze, zusammen höchstens 380 Zeichen.
+- long: ausführliche Fassung in 3–5 Absätzen (je 2–4 Sätze): was passiert ist, Hintergrund, wer was sagt, wie es weitergeht – aber NUR mit Fakten aus den Meldungen. Wenn die Meldungen wenig hergeben, lieber 2 Absätze als erfinden.
 - bild: englischer Suchbegriff (2–4 Wörter) für ein passendes Foto eines ORTES, GEBÄUDES, GEGENSTANDS oder SYMBOLS (z. B. "Reichstag building Berlin", "Wall Street sign", "wind turbines"). NIEMALS eine Person, kein Name einer Person, kein Logo, keine Parteisymbole, keine Opfer, keine Unglücksorte. Lieber allgemein (z. B. "German parliament plenary hall") als zu speziell. Wenn nichts Neutrales passt: "".
 
 JSON-FORMAT
 {"typ":"meldung|debatte|quatsch","cat":"…","icon":"…","bild":"…","title":"…","lead":"…",
  "facts":[["Kurzes Label","Wert","s1"]]  (0–3 Einträge, nur echte Zahlen/Daten aus den Meldungen),
- "points":[["Ein kurzer Satz.","s1"]]  (bei meldung/quatsch 2–4 Einträge, bei debatte weglassen),
+ "long":["Absatz","Absatz","Absatz"],
+ "points":[["Ein kurzer Satz.","s1"]]  (bei meldung/quatsch 3–4 Einträge, bei debatte weglassen),
  "L":{"who":"Vertreten u. a. von …","thesis":"kurzer Satz","a":[["Stichwort","Ein kurzer Satz.","s1"]],"long":["Absatz","Absatz"]},
  "M":{…gleich…},"R":{…gleich…}  (nur bei debatte; je 3 Einträge in a, je 2 Absätze in long)}
 
@@ -224,15 +228,17 @@ ${lines}`;
 }
 
 function promptShort(list) {
-  const blocks = list.map((c) => `### ${c.id}\n` + c.items.slice(0, 5).map((x) => `- ${SRC[x.src].name}: ${x.title} — ${x.teaser.slice(0, 240)}`).join("\n")).join("\n\n");
-  return `Du bist Redakteur einer deutschen Nachrichten-App. Unten stehen mehrere Ereignisse (jeweils mit ### und einer ID), teils auf Englisch. Schreibe für JEDES Ereignis eine kurze Karte komplett auf Deutsch.
+  const blocks = list.map((c) => `### ${c.id}\n` + c.items.slice(0, 6).map((x, i) => `[s${i + 1}] ${SRC[x.src].name}: ${x.title} — ${x.teaser.slice(0, 400)}`).join("\n")).join("\n\n");
+  return `Du bist Redakteur einer deutschen Nachrichten-App. Unten stehen mehrere Ereignisse (jeweils mit ### und einer ID), teils auf Englisch. Schreibe für JEDES Ereignis eine Karte komplett auf Deutsch.
 
 REGELN
 - Nur Fakten aus den Meldungen, nichts ergänzen. Komplett eigene Worte, keine Sätze übernehmen. Neutral, ohne Wertung.
-- title: höchstens 70 Zeichen. lead: 1–2 kurze Sätze, höchstens 200 Zeichen.
+- title: höchstens 70 Zeichen. lead: 2–3 Sätze, höchstens 350 Zeichen.
+- points: 1–3 weitere Fakten als kurze Sätze, jeweils mit dem Schlüssel der Meldung ([s1], [s2] …), aus der sie stammen. Keine Wiederholung des leads. Wenn nichts Weiteres drinsteht: [].
 - cat: eine aus [${CATS}]. icon: eines aus [${ICONS}]. quatsch: true nur bei kuriosen, harmlosen Meldungen.
+- bild: englischer Suchbegriff (2–4 Wörter) für ein Foto eines Ortes, Gebäudes, Gegenstands oder Symbols. NIEMALS Personen, Logos, Parteisymbole, Opfer oder Unglücksorte. Sonst "".
 
-Antworte als JSON-Objekt: {"<ID>":{"title":"…","lead":"…","cat":"…","icon":"…","quatsch":false}, …}
+Antworte als JSON-Objekt: {"<ID>":{"title":"…","lead":"…","points":[["Satz.","s1"]],"cat":"…","icon":"…","bild":"…","quatsch":false}, …}
 
 EREIGNISSE
 ${blocks}`;
@@ -245,6 +251,7 @@ function validate(card, n) {
   if (!card.title || card.title.length > 110 || !card.lead) return "titel/lead";
   card.facts = (card.facts || []).filter((f) => Array.isArray(f) && f.length === 3 && okKey(f[2])).slice(0, 3);
   card.bild = typeof card.bild === "string" ? card.bild.slice(0, 60) : "";
+  card.long = Array.isArray(card.long) ? card.long.filter((x) => typeof x === "string" && x.length > 20).slice(0, 5) : [];
   if (card.typ === "debatte") {
     const lens = [];
     for (const k of ["L", "M", "R"]) {
@@ -317,6 +324,7 @@ const pending = Object.values(cards).filter((c) => eligible(c) && (c.gen === nul
 
 const finish = (c, card, gen) => { c.gen = gen; c.newSince = 0; c.updated = NOW; c.card = { ...card, sources: sourcesOf(c), region: region(c), prio: 0, ai: gen === "ai" }; };
 
+let imgBudget = MAX_IMG;
 // a) volle KI-Karten für die wichtigsten Ereignisse
 let aiBudget = hasAI ? MAX_AI : 0;
 for (const c of pending) {
@@ -330,8 +338,8 @@ for (const c of pending) {
     const err = validate(parsed, Math.min(14, c.items.length));
     if (err) { status.ai.failed++; log(`Verworfen (${err}): ${c.items[0].title}`); }
     else {
-      const noImg = /unglück|kriminal|justiz/i.test(parsed.cat || "") || parsed.typ === "quatsch";
-      const img = noImg ? null : await commonsImage(parsed.bild); delete parsed.bild;
+      const noImg = /unglück|kriminal/i.test(parsed.cat || "") || parsed.typ === "quatsch";
+      const img = noImg ? null : (imgBudget--, await commonsImage(parsed.bild)); delete parsed.bild;
       if (img) parsed.img = img;
       finish(c, parsed, "ai"); status.ai.written++;
     }
@@ -349,8 +357,12 @@ for (let i = 0; i < needShort.length && hasAI && !aiDown; i += 20) {
     for (const c of batch) {
       const s = out[c.id];
       if (!s || !s.title || !s.lead || s.title.length > 110) continue;
-      const pts = [];
-      finish(c, { typ: s.quatsch || isQuatsch(c) ? "quatsch" : "meldung", cat: s.quatsch ? "Quatsch" : s.cat || "Aktuell", icon: s.icon || "news", title: s.title, lead: s.lead.slice(0, 300), points: pts, facts: [], short: true }, "short");
+      const n = Math.min(6, c.items.length), okKey = (k) => /^s\d+$/.test(k) && +k.slice(1) <= n;
+      const pts = (Array.isArray(s.points) ? s.points : []).filter((p) => Array.isArray(p) && p.length === 2 && typeof p[0] === "string" && okKey(p[1])).slice(0, 3);
+      const typ = s.quatsch || isQuatsch(c) ? "quatsch" : "meldung", cat = s.quatsch ? "Quatsch" : s.cat || "Aktuell";
+      const card = { typ, cat, icon: s.icon || "news", title: s.title, lead: s.lead.slice(0, 420), points: pts, facts: [], short: true };
+      if (imgBudget > 0 && typ !== "quatsch" && !/unglück|kriminal/i.test(cat) && s.bild) { imgBudget--; const img = await commonsImage(String(s.bild).slice(0, 60)); if (img) card.img = img; }
+      finish(c, card, "short");
       status.ai.short = (status.ai.short || 0) + 1;
     }
     await sleep(4500);
@@ -364,13 +376,16 @@ if (!hasAI) status.ai.note = "Kein KI-Schlüssel gesetzt: nur Schlagzeilen.";
 // Bilder an bestehenden Karten nachträglich gegen die Regeln prüfen
 for (const c of Object.values(cards)) {
   const im = c.card?.img; if (!im) continue;
-  if (/logo|emblem|coat_of_arms|wappen|seal_of|flag_of|insignia|signet/i.test(decodeURIComponent(im.page || "")) || PERSONISH.test(decodeURIComponent(im.page || "").replace(/_/g, " ")) || /unglück|kriminal|justiz/i.test(c.card.cat || "") || c.card.typ === "quatsch") delete c.card.img;
+  if (/logo|emblem|coat_of_arms|wappen|seal_of|flag_of|insignia|signet/i.test(decodeURIComponent(im.page || "")) || PERSONISH.test(decodeURIComponent(im.page || "").replace(/_/g, " ")) || /unglück|kriminal/i.test(c.card.cat || "") || c.card.typ === "quatsch") delete c.card.img;
 }
 
 /* ---------- 5. Feed schreiben ---------- */
 const keepCut = NOW - KEEP_DAYS * 864e5;
 for (const [id, c] of Object.entries(cards)) if (c.updated < keepCut || (!c.card && NOW - c.updated > 36 * 3600e3)) delete cards[id];
-for (const c of Object.values(cards)) if (c.items.length > 20) c.items = c.items.slice(0, 20);
+for (const c of Object.values(cards)) {
+  if (c.items.length > 14) c.items = c.items.slice(0, 14);
+  if (NOW - c.updated > 24 * 3600e3) for (const x of c.items) x.teaser = x.teaser.slice(0, 200);
+}
 for (const [id, t] of Object.entries(state.seen)) if (t < NOW - 4 * 864e5) delete state.seen[id];
 
 const built = Object.values(cards).filter((c) => c.card && (!hasAI || c.gen !== "raw" || c.card.lang === "de")).map((c) => {
@@ -378,9 +393,13 @@ const built = Object.values(cards).filter((c) => c.card && (!hasAI || c.gen !== 
   return { id: c.id, ...c.card, prio: c.card.typ === "quatsch" ? 1 : s >= 9 ? 3 : s >= 5 ? 2 : 1, upd: iso(Math.max(...c.items.map((x) => x.ts))), created: iso(c.created), nsrc: new Set(c.items.map((x) => x.src)).size };
 });
 const editorial = (feed.items || []).filter((x) => x.editorial && Date.parse(x.created) > keepCut);
-const items = [...built, ...editorial].sort((a, b) => Date.parse(b.upd) - Date.parse(a.upd)).slice(0, MAX_ITEMS);
+// feed.json: das Wichtigste und Neueste; archive.json: alles Weitere fürs endlose Scrollen
+const rank = (x) => (x.prio || 1) * 6 - (NOW - Date.parse(x.upd)) / 3600e3;
+const all = [...built, ...editorial].sort((a, b) => rank(b) - rank(a));
+const items = all.slice(0, MAX_ITEMS), archive = all.slice(MAX_ITEMS, MAX_ITEMS + MAX_ARCHIVE);
 
-writeJSON(`${DATA}/feed.json`, { generated: iso(NOW), ai: status.ai, items });
+writeJSON(`${DATA}/feed.json`, { generated: iso(NOW), ai: status.ai, archive: archive.length, items });
+writeFileSync(`${DATA}/archive.json`, JSON.stringify({ generated: iso(NOW), items: archive }));
 // nicht mehr verwendete Bilder löschen
 if (existsSync(`${DATA}/img`)) {
   const used = new Set(Object.values(cards).map((c) => c.card?.img?.src?.split("/").pop()).filter(Boolean));
