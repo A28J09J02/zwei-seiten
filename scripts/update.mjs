@@ -210,7 +210,7 @@ STRENGE REGELN
 - Sonst typ "meldung".
 - cat: eine aus [${CATS}]. icon: eines aus [${ICONS}].
 - title: höchstens 70 Zeichen, bei debatte als Frage. lead: 2 kurze neutrale Sätze, zusammen höchstens 260 Zeichen.
-- bild: englischer Suchbegriff (2–4 Wörter) für ein passendes Foto eines ORTES, GEBÄUDES, GEGENSTANDS oder SYMBOLS (z. B. "Reichstag building Berlin", "Wall Street sign", "wind turbines"). NIEMALS eine Person, kein Name einer Person, keine Opfer, keine Unglücksorte. Wenn nichts Neutrales passt: "".
+- bild: englischer Suchbegriff (2–4 Wörter) für ein passendes Foto eines ORTES, GEBÄUDES, GEGENSTANDS oder SYMBOLS (z. B. "Reichstag building Berlin", "Wall Street sign", "wind turbines"). NIEMALS eine Person, kein Name einer Person, kein Logo, keine Parteisymbole, keine Opfer, keine Unglücksorte. Lieber allgemein (z. B. "German parliament plenary hall") als zu speziell. Wenn nichts Neutrales passt: "".
 
 JSON-FORMAT
 {"typ":"meldung|debatte|quatsch","cat":"…","icon":"…","bild":"…","title":"…","lead":"…",
@@ -283,6 +283,7 @@ async function commonsImage(term) {
       const lic = (m.LicenseShortName?.value || "").trim();
       if (!ii?.thumburl || !FREE.test(lic) || NOT_FREE.test(lic)) continue;
       if (ii.width < 600 || ii.width < ii.height) continue;                       // nur Querformat in brauchbarer Größe
+      if (/logo|emblem|coat[_ ]of[_ ]arms|wappen|seal[_ ]of|flag[_ ]of|insignia|signet/i.test(p.title || "")) continue; // keine Logos/Wappen (Marken, irreführend)
       const cats = (m.Categories?.value || "").toLowerCase();
       if (/portrait|people|men of|women of|politicians|births|deaths/.test(cats)) continue; // keine Personenfotos
       const artist = (m.Artist?.value || "unbekannt").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
@@ -325,7 +326,8 @@ for (const c of pending) {
     const err = validate(parsed, Math.min(14, c.items.length));
     if (err) { status.ai.failed++; log(`Verworfen (${err}): ${c.items[0].title}`); }
     else {
-      const img = await commonsImage(parsed.bild); delete parsed.bild;
+      const noImg = /unglück|kriminal|justiz/i.test(parsed.cat || "") || parsed.typ === "quatsch";
+      const img = noImg ? null : await commonsImage(parsed.bild); delete parsed.bild;
       if (img) parsed.img = img;
       finish(c, parsed, "ai"); status.ai.written++;
     }
