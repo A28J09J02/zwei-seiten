@@ -357,6 +357,12 @@ for (let i = 0; i < needShort.length && hasAI && !aiDown; i += 20) {
 for (const c of pending) if (!c.card || (c.gen === "raw" && c.newSince > 0)) finish(c, rawCard(c), "raw");
 if (!hasAI) status.ai.note = "Kein KI-Schlüssel gesetzt: nur Schlagzeilen.";
 
+// Bilder an bestehenden Karten nachträglich gegen die Regeln prüfen
+for (const c of Object.values(cards)) {
+  const im = c.card?.img; if (!im) continue;
+  if (/logo|emblem|coat_of_arms|wappen|seal_of|flag_of|insignia|signet/i.test(decodeURIComponent(im.page || "")) || /unglück|kriminal|justiz/i.test(c.card.cat || "") || c.card.typ === "quatsch") delete c.card.img;
+}
+
 /* ---------- 5. Feed schreiben ---------- */
 const keepCut = NOW - KEEP_DAYS * 864e5;
 for (const [id, c] of Object.entries(cards)) if (c.updated < keepCut || (!c.card && NOW - c.updated > 36 * 3600e3)) delete cards[id];
