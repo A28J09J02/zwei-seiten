@@ -20,7 +20,8 @@ const ICONS = {
 const SIDES = { L: { cls: "pl", name: "Eher links" }, M: { cls: "pm", name: "Mitte" }, R: { cls: "pr", name: "Eher rechts" } };
 const REGION = { de: "Deutschland", us: "USA", welt: "Welt" };
 const LBL = ["Klar links", "Eher links", "Mitte", "Eher rechts", "Klar rechts"];
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const dec = (s) => String(s ?? "").replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&(rsquo|lsquo);/g, "’").replace(/&(rdquo|ldquo);/g, "”").replace(/&amp;/g, "&");
+const esc = (s) => dec(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const $ = (id) => document.getElementById(id);
 
 /* ---------- Zustand (nur auf diesem Gerät) ---------- */
@@ -99,13 +100,18 @@ function sidePanel(it, k) {
   const d = it[k], s = SIDES[k];
   return `<section class="panel ${s.cls}"><div class="side"><i class="dot"></i><span>${s.name}</span></div>
    <p class="who">${esc(d.who)}</p><div class="thesis">${esc(d.thesis)}</div>
-   <div class="body"><ul class="args">${(d.a || []).slice(0, 3).map((a) => `<li><b>${esc(a[0])}</b><span>${esc(a[1])}</span><small>${esc(srcName(it, a[2]))}</small></li>`).join("")}</ul></div></section>`;
+   <div class="body"><ul class="args">${(d.a || []).slice(0, 3).map((a) => `<li><b>${esc(a[0])}</b><span>${esc(a[1])}</span><small>${esc(srcName(it, a[2]))}</small></li>`).join("")}</ul></div>
+   ${chipLinks(it, (d.a || []).map((a) => a[2]))}</section>`;
+}
+function chipLinks(it, keys) {
+  const list = [...new Set(keys)].filter((k) => it.sources?.[k]).map((k) => it.sources[k]).slice(0, 4);
+  return list.length ? `<div class="chiplinks"><span>Lesen:</span>${list.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.o)} ↗</a>`).join("")}</div>` : "";
 }
 // Eine einheitliche Leiste unten an jeder Karte: Hauptaktion, Quellen, Weiter
 function barHTML(it) {
   const n = Object.keys(it.sources || {}).length;
   const main = it.typ === "debatte" ? `<button class="act primary" data-act="goto1">Drei Seiten →</button>` : `<button class="act primary" data-act="D">Weiterlesen</button>`;
-  return `<div class="cardbar">${main}<button class="act" data-act="S">${n} ${n === 1 ? "Quelle" : "Quellen"}</button><button class="next" aria-label="Nächste Karte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button></div>`;
+  return `<div class="cardbar">${main}<button class="act" data-act="S">${n} ${n === 1 ? "Artikel" : "Artikel"} ↗</button><button class="next" aria-label="Nächste Karte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button></div>`;
 }
 function topicHTML(it, reason) {
   if (it.typ !== "debatte") {
@@ -134,8 +140,22 @@ function showSheet(cls, sideHTML, html, cb) { lastFocus = document.activeElement
 function closeSheet() { sheet.hidden = true; scrim.hidden = true; const cb = onClose; onClose = null; if (cb) cb(); else if (lastFocus) lastFocus.focus(); }
 $("close").onclick = closeSheet; scrim.onclick = closeSheet;
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !sheet.hidden) closeSheet(); });
-function srcList(it, keys) {
-  return `<h4>Quellen</h4><ol class="srcs">${keys.filter((k) => it.sources?.[k]).map((k) => { const s = it.sources[k]; return `<li><div><a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a><span>${esc(s.o)}${s.d ? " · " + esc(day(s.d)) : ""}</span></div></li>`; }).join("")}</ol>`;
+// Originalartikel: große, direkt antippbare Zeilen, nach Richtung des Mediums sortiert
+const PAYWALL = /^(FAZ|Süddeutsche|Welt|NZZ|Handelsblatt|Spiegel|Zeit|New York Times|Tagesspiegel|Cicero|Washington Examiner|National Review)/;
+const LEANS = { "links": ["l", "eher links"], "mitte-links": ["l", "eher links"], "mitte": ["m", "Mitte"], "mitte-rechts": ["r", "eher rechts"], "rechts": ["r", "eher rechts"] };
+const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+function artRow(s) {
+  const ln = LEANS[s.lean];
+  return `<a class="artrow" href="${esc(s.u)}" target="_blank" rel="noopener"><span class="artmeta"><b>${esc(s.o)}</b>${ln ? `<i class="lean ${ln[0]}">${ln[1]}</i>` : ""}${s.d ? `<em>${esc(day(s.d))}</em>` : ""}</span><span class="arttitle">${esc(s.t)}</span>${PAYWALL.test(s.o || "") ? `<small>teils mit Bezahlschranke</small>` : ""}<span class="go">${ARROW}</span></a>`;
+}
+function srcList(it, keys, title = "Originalartikel lesen", grouped = false) {
+  const list = [...new Set(keys)].filter((k) => it.sources?.[k]).map((k) => it.sources[k]);
+  if (!list.length) return "";
+  if (!grouped || !list.some((x) => x.lean)) return `<h4>${title}</h4><div class="arts">${list.map(artRow).join("")}</div>`;
+  const grp = { l: [], m: [], r: [], x: [] };
+  list.forEach((x) => grp[(LEANS[x.lean] || ["x"])[0]].push(x));
+  const sec = (k, t) => grp[k].length ? `<h4>${t}</h4><div class="arts">${grp[k].map(artRow).join("")}</div>` : "";
+  return sec("l", "Medien eher links") + sec("m", "Medien der Mitte") + sec("r", "Medien eher rechts") + sec("x", "Weitere");
 }
 function imgCredit(it) {
   if (!it.img) return "";
@@ -146,15 +166,15 @@ function openArticle(it, k) {
   if (k === "D") {
     const facts = (it.facts || []).length ? `<ul class="facts">${it.facts.map((f) => `<li><span>${esc(f[0])}</span><b>${esc(f[1])}</b></li>`).join("")}</ul>` : "";
     const pts = (it.points || []).map((p) => `<li><span>${esc(p[0])}</span><small>${esc(srcName(it, p[1]))}</small></li>`).join("");
-    showSheet("", `<span>${esc(it.typ === "quatsch" ? "Quatsch" : "Meldung")}</span>`, `<h3 id="sheet-title">${esc(it.title)}</h3>${it.lead ? `<p class="leadbig">${esc(it.lead)}</p>` : ""}${facts}${(it.long || []).length ? `<h4>Ausführlich</h4>${it.long.map((x) => `<p>${esc(x)}</p>`).join("")}` : ""}${pts ? `<h4>Das Wichtigste</h4><ul class="points full">${pts}</ul>` : ""}${imgCredit(it)}${srcList(it, Object.keys(it.sources || {}))}<p class="note">${label(it)} · Stand ${day(it.upd)}</p>`);
+    showSheet("", `<span>${esc(it.typ === "quatsch" ? "Quatsch" : "Meldung")}</span>`, `<h3 id="sheet-title">${esc(it.title)}</h3>${it.lead ? `<p class="leadbig">${esc(it.lead)}</p>` : ""}${facts}${(it.long || []).length ? `<h4>Ausführlich</h4>${it.long.map((x) => `<p>${esc(x)}</p>`).join("")}` : ""}${pts ? `<h4>Das Wichtigste</h4><ul class="points full">${pts}</ul>` : ""}${srcList(it, Object.keys(it.sources || {}), "Ganze Artikel lesen", true)}${imgCredit(it)}<p class="note">${label(it)} · Stand ${day(it.upd)}</p>`);
     return;
   }
   if (k === "S") {
-    showSheet("", "<span>Quellen</span>", `<h3 id="sheet-title">${esc(it.title)}</h3><p class="lead">${it.ai ? "Diese Karte wurde automatisch aus den folgenden Meldungen zusammengefasst. Für Details tippe auf den Originalartikel." : "Die Inhalte stammen aus diesen Quellen. Für Details tippe auf den Originalartikel."}</p>${imgCredit(it)}${srcList(it, Object.keys(it.sources || {}))}`);
+    showSheet("", "<span>Artikel</span>", `<h3 id="sheet-title">${esc(it.title)}</h3><p class="lead">Hier liest du die ganzen Artikel bei den Medien selbst. Tippe auf einen Artikel, er öffnet sich direkt. Sortiert nach der Richtung des Mediums, damit du gezielt beide Seiten lesen kannst.</p>${srcList(it, Object.keys(it.sources || {}), "", true)}${imgCredit(it)}`);
     return;
   }
   const d = it[k], s = SIDES[k]; bump(it.cat, 2);
-  showSheet(s.cls, `<i class="dot"></i><span>${s.name}</span>`, `<h3 id="sheet-title">${esc(d.thesis)}</h3><p class="who">${esc(d.who)}</p>${(d.long || []).map((p) => `<p>${esc(p)}</p>`).join("")}${srcList(it, [...new Set((d.a || []).map((a) => a[2]))])}<p class="note">${label(it)}. Die Positionen werden so wiedergegeben, wie ihre Vertreter sie begründen, nicht als Bewertung.</p>`);
+  showSheet(s.cls, `<i class="dot"></i><span>${s.name}</span>`, `<h3 id="sheet-title">${esc(d.thesis)}</h3><p class="who">${esc(d.who)}</p>${srcList(it, (d.a || []).map((a) => a[2]), "Die Artikel zu dieser Position")}<h4>Zusammengefasst</h4>${(d.long || []).map((p) => `<p>${esc(p)}</p>`).join("")}<p class="note">${label(it)}. Die Positionen werden so wiedergegeben, wie ihre Vertreter sie begründen, nicht als Bewertung.</p>`);
 }
 
 /* ---------- Interessen ---------- */
@@ -219,7 +239,7 @@ function wire(art, it) {
     art.querySelectorAll("[data-goto]").forEach((b) => (b.onclick = () => pan.scrollTo({ left: pan.clientWidth * +b.dataset.goto, behavior: "smooth" })));
     tabs.forEach((b) => (b.onclick = () => pan.scrollTo({ left: pan.clientWidth * +b.dataset.p, behavior: "smooth" })));
     pan.addEventListener("scroll", () => { const p = Math.round(pan.scrollLeft / pan.clientWidth); tabs.forEach((b, k) => b.classList.toggle("on", k === p));
-      const map = { 0: ["goto1", "Drei Seiten →"], 1: ["L", "Ganzer Beitrag"], 2: ["M", "Ganzer Beitrag"], 3: ["R", "Ganzer Beitrag"], 4: ["goto1", "Seiten nochmal"] };
+      const map = { 0: ["goto1", "Drei Seiten →"], 1: ["L", "Artikel dieser Seite"], 2: ["M", "Artikel dieser Seite"], 3: ["R", "Artikel dieser Seite"], 4: ["goto1", "Seiten nochmal"] };
       const [act, txt] = map[p] || map[0]; if (mainBtn.dataset.act !== act) { mainBtn.dataset.act = act; mainBtn.textContent = txt; } if (p >= 1 && p <= 3 && !seenSide.has(p)) { seenSide.add(p); bump(it.cat, 0.5); } }, { passive: true });
     art.querySelectorAll(".scale button").forEach((b) => (b.onclick = () => { const v = +b.dataset.v; if (st.votes[it.id] == null) bump(it.cat, 1); st.votes[it.id] = v; saveSt(); art.querySelectorAll(".scale button").forEach((x) => x.classList.toggle("on", x === b)); }));
   }

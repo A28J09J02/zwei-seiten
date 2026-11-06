@@ -32,7 +32,7 @@ const status = { run: iso(NOW), sources: {}, ai: { provider: null, model: null, 
 /* ---------- 1. Abrufen ---------- */
 const xml = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@", textNodeName: "#t", trimValues: true });
 const text = (v) => (v == null ? "" : typeof v === "object" ? (v["#t"] ?? v["@href"] ?? "") : String(v));
-const clean = (s) => text(s).replace(/<!\[CDATA\[|\]\]>/g, "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\s+/g, " ").trim();
+const clean = (s) => text(s).replace(/<!\[CDATA\[|\]\]>/g, "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&(rsquo|lsquo);/g, "’").replace(/&(rdquo|ldquo);/g, "”").replace(/&ndash;/g, "–").replace(/&mdash;/g, "—").replace(/&hellip;/g, "…").replace(/\s+/g, " ").trim();
 const arr = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
 async function get(src) {
