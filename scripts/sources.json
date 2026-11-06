@@ -313,16 +313,6 @@
    "kind": "news"
   },
   {
-   "id": "spiegel-meinung",
-   "name": "Spiegel Meinung",
-   "type": "rss",
-   "url": "https://www.spiegel.de/debatte/index.rss",
-   "region": "de",
-   "lang": "de",
-   "lean": "mitte-links",
-   "kind": "meinung"
-  },
-  {
    "id": "zeit-politik",
    "name": "Zeit Politik",
    "type": "rss",
