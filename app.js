@@ -104,8 +104,9 @@ function sidePanel(it, k) {
    ${chipLinks(it, (d.a || []).map((a) => a[2]))}</section>`;
 }
 function chipLinks(it, keys) {
-  const list = [...new Set(keys)].filter((k) => it.sources?.[k]).map((k) => it.sources[k]).slice(0, 4);
-  return list.length ? `<div class="chiplinks"><span>Lesen:</span>${list.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.o)} ↗</a>`).join("")}</div>` : "";
+  const rankK = (x) => ({ experte: 0, meinung: 1 })[x.k] ?? 2;
+  const list = [...new Set(keys)].filter((k) => it.sources?.[k]).map((k) => it.sources[k]).sort((a, b) => rankK(a) - rankK(b)).slice(0, 4);
+  return list.length ? `<div class="chiplinks"><span>Lesen:</span>${list.map((x) => `<a class="${x.k === "experte" ? "ex" : ""}" href="${esc(x.u)}" target="_blank" rel="noopener">${x.k === "experte" ? "★ " : ""}${esc(x.o.replace(/ \(.*\)$/, ""))} ↗</a>`).join("")}</div>` : "";
 }
 // Eine einheitliche Leiste unten an jeder Karte: Hauptaktion, Quellen, Weiter
 function barHTML(it) {
@@ -146,10 +147,11 @@ const LEANS = { "links": ["l", "eher links"], "mitte-links": ["l", "eher links"]
 const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>';
 function artRow(s) {
   const ln = LEANS[s.lean];
-  return `<a class="artrow" href="${esc(s.u)}" target="_blank" rel="noopener"><span class="artmeta"><b>${esc(s.o)}</b>${ln ? `<i class="lean ${ln[0]}">${ln[1]}</i>` : ""}${s.d ? `<em>${esc(day(s.d))}</em>` : ""}</span><span class="arttitle">${esc(s.t)}</span>${PAYWALL.test(s.o || "") ? `<small>teils mit Bezahlschranke</small>` : ""}<span class="go">${ARROW}</span></a>`;
+  return `<a class="artrow${s.k === "experte" ? " expert" : ""}" href="${esc(s.u)}" target="_blank" rel="noopener"><span class="artmeta">${s.k === "experte" ? `<i class="kind">Expertenbeitrag</i>` : s.k === "meinung" ? `<i class="kind op">Kommentar</i>` : ""}<b>${esc(s.o)}</b>${ln ? `<i class="lean ${ln[0]}">${ln[1]}</i>` : ""}${s.d ? `<em>${esc(day(s.d))}</em>` : ""}</span><span class="arttitle">${esc(s.t)}</span>${PAYWALL.test(s.o || "") ? `<small>teils mit Bezahlschranke</small>` : ""}<span class="go">${ARROW}</span></a>`;
 }
 function srcList(it, keys, title = "Originalartikel lesen", grouped = false) {
-  const list = [...new Set(keys)].filter((k) => it.sources?.[k]).map((k) => it.sources[k]);
+  const rankK = (x) => ({ experte: 0, meinung: 1 })[x.k] ?? 2;
+  const list = [...new Set(keys)].filter((k) => it.sources?.[k]).map((k) => it.sources[k]).sort((a, b) => rankK(a) - rankK(b));
   if (!list.length) return "";
   if (!grouped || !list.some((x) => x.lean)) return `<h4>${title}</h4><div class="arts">${list.map(artRow).join("")}</div>`;
   const grp = { l: [], m: [], r: [], x: [] };

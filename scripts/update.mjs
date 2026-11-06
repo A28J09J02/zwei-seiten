@@ -81,7 +81,7 @@ await Promise.all(SOURCES.map(async (src) => {
     status.sources[src.id] = { ok: true, items: items.length };
     for (const it of items) {
       if (state.seen[it.id]) continue;
-      if (src.kind === "meinung") { (state.opinions ||= {})[it.id] = { id: it.id, url: it.url, title: it.title, teaser: it.teaser, ts: it.ts, src: it.src }; state.seen[it.id] = NOW; }
+      if (src.kind === "meinung" || src.kind === "experte") { (state.opinions ||= {})[it.id] = { id: it.id, url: it.url, title: it.title, teaser: it.teaser, ts: it.ts, src: it.src }; state.seen[it.id] = NOW; }
       else fresh.push(it);
     }
   } catch (e) {
@@ -394,10 +394,11 @@ const DEB = (state.debates ||= {});
 const DEB_RUN = +(process.env.DEBATES_PER_RUN || 3);
 const DEB_DAYS = 21;
 const POLCATS = /politik|soziales|migration|sicherheit|außenpolitik|klima|wirtschaft|rente|wohnen|verkehr|bildung|gesundheit|justiz|technik|aktuell/i;
-for (const [id, o] of Object.entries(state.opinions || {})) if (NOW - o.ts > 4 * 864e5) delete state.opinions[id];
-const sourcesOfItems = (items) => { const out = {}; items.forEach((x, i) => { const s = SRC[x.src]; out[`s${i + 1}`] = { o: s.name, t: x.title, u: x.url, d: iso(x.ts), lean: s.lean }; }); return out; };
+for (const [id, o] of Object.entries(state.opinions || {})) if (NOW - o.ts > (SRC[o.src]?.kind === "experte" ? 21 : 5) * 864e5) delete state.opinions[id];
+const sourcesOfItems = (items) => { const out = {}; items.forEach((x, i) => { const s = SRC[x.src]; out[`s${i + 1}`] = { o: s.name, t: x.title, u: x.url, d: iso(x.ts), lean: s.lean, k: s.kind }; }); return out; };
+const kindLabel = (s) => s.kind === "experte" ? "Expertenbeitrag" : s.kind === "meinung" ? "Kommentar" : "Meldung";
 function promptDebate(frage, items) {
-  const lines = items.map((x, i) => { const s = SRC[x.src]; return `[s${i + 1}] ${s.name} (${s.kind === "meinung" ? "Kommentar" : "Meldung"}, Grundtendenz ${s.lean}): ${x.title} — ${x.teaser.slice(0, 500)}`; }).join("\n");
+  const lines = items.map((x, i) => { const s = SRC[x.src]; return `[s${i + 1}] ${s.name} (${kindLabel(s)}, Grundtendenz ${s.lean}): ${x.title} — ${x.teaser.slice(0, 500)}`; }).join("\n");
   return `Du bist Redakteur der Nachrichten-App "Zwei Seiten". Baue zur Streitfrage "${frage}" eine Debatten-Karte komplett auf Deutsch als JSON. Grundlage sind NUR die Meldungen und Kommentare unten.
 
 REGELN
@@ -405,6 +406,7 @@ REGELN
 - Nur Fakten und Positionen, die in den Texten unten stehen. Nichts aus eigenem Wissen ergänzen.
 - Drei Seiten: "L" = eher linke Position, "M" = Mitte (z. B. Regierungslinie, Kompromiss, neutrale Fachleute), "R" = eher rechte Position. Jede Position nur Akteuren oder Kommentatoren zuschreiben, die sie laut Text vertreten (in "who" nennen, z. B. "Grüne und Sozialverbände" oder "Kommentar im Spiegel"). Einordnung nach Inhalt und Akteuren, nicht nach dem Medium.
 - Alle drei Seiten gleich lang und gleich fair, jeweils mit den stärksten Argumenten ihrer Vertreter. Jede Aussage mit Schlüssel (s1, s2 …).
+- Stütze jede Seite möglichst auf Expertenbeiträge (Forschungsinstitute, Thinktanks, Wissenschaftler) und Kommentare, nicht nur auf Meldungen. Nenne die Fachleute oder Institute in "who" (z. B. "DIW und Hans-Böckler-Stiftung" oder "Heritage Foundation").
 - Gibt es in den Texten nicht für alle drei Seiten belegbare Positionen, antworte nur {"typ":"abbruch"}.
 - title: die Streitfrage als Frage, höchstens 70 Zeichen. lead: 2–3 neutrale Sätze zum Stand, höchstens 380 Zeichen.
 - cat: eine aus [${CATS}]. icon: eines aus [${ICONS}].
@@ -426,22 +428,23 @@ if (hasAI && !aiDown && DEB_RUN > 0) {
     for (const x of c.items) if (SRC[x.src] && !seenIds.has(x.id)) { seenIds.add(x.id); pool.push(x); }
   }
   for (const o of Object.values(state.opinions || {})) if (SRC[o.src] && !seenIds.has(o.id)) { seenIds.add(o.id); pool.push(o); }
-  pool.sort((a, b) => (SRC[b.src].kind === "meinung") - (SRC[a.src].kind === "meinung") || b.ts - a.ts);
+  const w = (x) => ({ experte: 2, meinung: 1 })[SRC[x.src].kind] || 0;
+  pool.sort((a, b) => w(b) - w(a) || b.ts - a.ts);
   const known = Object.values(DEB).map((d) => d.card?.title).filter(Boolean).slice(-150);
   let made = 0;
   const regions = ["de", "us", "welt"], perRegion = Math.ceil(DEB_RUN / 3);
   for (const reg of regions) {
     if (made >= DEB_RUN || aiDown) break;
-    const list = pool.filter((x) => (SRC[x.src].region === reg) || (reg === "welt" && SRC[x.src].region !== "de" && SRC[x.src].kind === "meinung")).slice(0, 220);
+    const list = pool.filter((x) => (SRC[x.src].region === reg) || (reg === "welt" && SRC[x.src].region !== "de" && SRC[x.src].kind !== "news")).slice(0, 240);
     if (list.length < 8) continue;
     const byKey = new Map(list.map((x, i) => [`m${i + 1}`, x]));
     const plan = `Du planst Debatten für eine Nachrichten-App. Unten stehen aktuelle Meldungen und Kommentare (Schlüssel m1, m2 …). Finde bis zu ${perRegion + 3} WIRKLICH UMSTRITTENE politische oder gesellschaftliche Fragen, bei denen in diesen Texten erkennbar verschiedene Lager (Parteien, Regierung, Opposition, Verbände, Kommentatoren) unterschiedliche Positionen vertreten. Keine reinen Ereignisse ohne Streit, kein Sport, keine Unglücke.
 Nicht wiederholen, auch nicht sinngemäß (gibt es schon): ${known.join(" | ") || "–"}
-Wähle pro Frage 5–14 passende Schlüssel, möglichst aus Medien unterschiedlicher Richtung und mit Kommentaren.
+Wähle pro Frage 5–14 passende Schlüssel, möglichst aus Quellen unterschiedlicher Richtung und mit Expertenbeiträgen und Kommentaren für jede Seite.
 Antworte als JSON: {"debatten":[{"frage":"…?","texte":["m3","m17"]}]}
 
 TEXTE
-${list.map((x, i) => `m${i + 1} [${SRC[x.src].name}, ${SRC[x.src].lean}${SRC[x.src].kind === "meinung" ? ", Kommentar" : ""}] ${x.title}`).join("\n")}`;
+${list.map((x, i) => `m${i + 1} [${SRC[x.src].name}, ${SRC[x.src].lean}, ${kindLabel(SRC[x.src])}] ${x.title}`).join("\n")}`;
     let plans = [];
     try { const r = await ai(plan); plans = JSON.parse(r.text.replace(/^```(json)?|```$/g, "").trim()).debatten || []; await sleep(4500); }
     catch (e) { status.ai.note = "Debattenplanung: " + String(e.message).slice(0, 120); continue; }
