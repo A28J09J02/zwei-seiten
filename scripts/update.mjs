@@ -54,7 +54,8 @@ function parse(src, body) {
   const push = (title, teaser, url, date) => {
     title = clean(title); url = text(url).trim(); if (!title || !url) return;
     const d = Date.parse(date); const ts = isNaN(d) ? NOW : Math.min(d, NOW);
-    if (NOW - ts > MAX_AGE_H * 3600e3) return;
+    const maxAge = src.kind === "experte" ? 21 * 24 : src.kind === "meinung" ? 5 * 24 : MAX_AGE_H;   // Fachbeiträge bleiben länger relevant
+    if (NOW - ts > maxAge * 3600e3) return;
     out.push({ id: hash(url), url, title, teaser: clean(teaser).slice(0, 700), ts, src: src.id });
   };
   if (src.type === "tagesschau") {

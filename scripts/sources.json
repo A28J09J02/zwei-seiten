@@ -413,26 +413,6 @@
    "kind": "meinung"
   },
   {
-   "id": "diw",
-   "name": "DIW Berlin (Wirtschaftsforschung)",
-   "type": "rss",
-   "url": "https://www.diw.de/de/rss_publikationen.xml",
-   "region": "de",
-   "lang": "de",
-   "lean": "mitte-links",
-   "kind": "experte"
-  },
-  {
-   "id": "boeckler",
-   "name": "Hans-Böckler-Stiftung",
-   "type": "rss",
-   "url": "https://www.boeckler.de/de/rss.xml",
-   "region": "de",
-   "lang": "de",
-   "lean": "links",
-   "kind": "experte"
-  },
-  {
    "id": "boell",
    "name": "Heinrich-Böll-Stiftung",
    "type": "rss",
@@ -440,16 +420,6 @@
    "region": "de",
    "lang": "de",
    "lean": "links",
-   "kind": "experte"
-  },
-  {
-   "id": "fes",
-   "name": "Friedrich-Ebert-Stiftung",
-   "type": "rss",
-   "url": "https://www.fes.de/rss.xml",
-   "region": "de",
-   "lang": "de",
-   "lean": "mitte-links",
    "kind": "experte"
   },
   {
@@ -493,46 +463,6 @@
    "kind": "experte"
   },
   {
-   "id": "iw",
-   "name": "Institut der deutschen Wirtschaft",
-   "type": "rss",
-   "url": "https://www.iwkoeln.de/rss.xml",
-   "region": "de",
-   "lang": "de",
-   "lean": "mitte-rechts",
-   "kind": "experte"
-  },
-  {
-   "id": "kas",
-   "name": "Konrad-Adenauer-Stiftung",
-   "type": "rss",
-   "url": "https://www.kas.de/de/rss",
-   "region": "de",
-   "lang": "de",
-   "lean": "mitte-rechts",
-   "kind": "experte"
-  },
-  {
-   "id": "fnst",
-   "name": "Friedrich-Naumann-Stiftung",
-   "type": "rss",
-   "url": "https://www.freiheit.org/de/rss.xml",
-   "region": "de",
-   "lang": "de",
-   "lean": "mitte-rechts",
-   "kind": "experte"
-  },
-  {
-   "id": "cap",
-   "name": "Center for American Progress",
-   "type": "rss",
-   "url": "https://www.americanprogress.org/feed/",
-   "region": "us",
-   "lang": "en",
-   "lean": "links",
-   "kind": "experte"
-  },
-  {
    "id": "brookings",
    "name": "Brookings Institution",
    "type": "rss",
@@ -553,26 +483,6 @@
    "kind": "experte"
   },
   {
-   "id": "cfr",
-   "name": "Council on Foreign Relations",
-   "type": "rss",
-   "url": "https://www.cfr.org/rss.xml",
-   "region": "us",
-   "lang": "en",
-   "lean": "mitte",
-   "kind": "experte"
-  },
-  {
-   "id": "aei",
-   "name": "American Enterprise Institute",
-   "type": "rss",
-   "url": "https://www.aei.org/feed/",
-   "region": "us",
-   "lang": "en",
-   "lean": "rechts",
-   "kind": "experte"
-  },
-  {
    "id": "heritage",
    "name": "Heritage Foundation",
    "type": "rss",
@@ -583,30 +493,10 @@
    "kind": "experte"
   },
   {
-   "id": "cato",
-   "name": "Cato Institute",
-   "type": "rss",
-   "url": "https://www.cato.org/rss/recent-opeds",
-   "region": "us",
-   "lang": "en",
-   "lean": "rechts",
-   "kind": "experte"
-  },
-  {
    "id": "conversation-global",
    "name": "The Conversation Global",
    "type": "rss",
    "url": "https://theconversation.com/global/articles.atom",
-   "region": "welt",
-   "lang": "en",
-   "lean": "mitte",
-   "kind": "experte"
-  },
-  {
-   "id": "chatham",
-   "name": "Chatham House",
-   "type": "rss",
-   "url": "https://www.chathamhouse.org/rss.xml",
    "region": "welt",
    "lang": "en",
    "lean": "mitte",
