@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Zwei Seiten</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
 <meta name="description" content="Nachrichten aus Deutschland, den USA und der Welt – bei Debatten aus linker, mittiger und rechter Sicht, immer mit Quellen.">
 <meta name="theme-color" content="#fbfbfc" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14161b" media="(prefers-color-scheme: dark)">
@@ -14,16 +16,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 <div class="app" id="app">
   <div class="top">
     <header>
       <div class="brand"><i><b></b><b></b><b></b></i>Zwei Seiten</div>
-      <button class="stand" id="foryou">Für dich</button>
+      <div class="hbtns"><button class="stand" id="overview">Übersicht</button><button class="stand" id="foryou">Für dich</button></div>
     </header>
     <nav class="filters" id="filters" aria-label="Filter">
       <button data-f="alle" class="on">Alle</button>
@@ -41,6 +41,6 @@
     <div class="sheet-body" id="sheet-body"></div>
   </section>
 </div>
-<script src="app.js?v=1"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

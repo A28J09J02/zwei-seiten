@@ -1,11 +1,12 @@
 // Zwei Seiten – Cronjob: Quellen abrufen, bündeln, Karten schreiben (Gemini, Ersatz Groq), prüfen, feed.json schreiben.
 // Aufruf: node scripts/update.mjs   (DATA_DIR=Ordner des data-Branches, Standard ./data)
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
 
 const DATA = process.env.DATA_DIR || "data";
-const MAX_AI = +(process.env.MAX_AI_PER_RUN || 5);          // höchstens so viele KI-Karten pro Lauf
+const MAX_AI = +(process.env.MAX_AI_PER_RUN || 6);          // höchstens so viele volle KI-Karten pro Lauf
+const MAX_SHORT = +(process.env.MAX_SHORT_PER_RUN || 40);   // Kurzfassungen pro Lauf (in Sammelaufrufen à 20)
 const MAX_AGE_H = 48;                                       // ältere Meldungen beim Abruf ignorieren
 const KEEP_DAYS = 30;                                       // Karten so lange im Feed halten
 const MAX_ITEMS = 250;                                      // Obergrenze im Feed
@@ -197,27 +198,44 @@ const ICONS = "shield, euro, speed, house, clock, border, globe, leaf, chart, sc
 
 function promptFor(c) {
   const lines = c.items.slice(0, 14).map((x, i) => { const s = SRC[x.src]; return `[s${i + 1}] ${s.name} (Grundtendenz ${s.lean}, ${new Date(x.ts).toISOString().slice(0, 16)}): ${x.title} — ${x.teaser}`; }).join("\n");
-  return `Du bist Redakteur der Nachrichten-App "Zwei Seiten". Unten stehen Meldungen verschiedener Medien zum selben Ereignis. Schreibe daraus EINE Karte auf Deutsch als JSON.
+  return `Du bist Redakteur der Nachrichten-App "Zwei Seiten". Unten stehen Meldungen verschiedener Medien zum selben Ereignis, teils auf Englisch. Schreibe daraus EINE Karte komplett auf Deutsch als JSON.
 
 STRENGE REGELN
+- Alles auf Deutsch, auch wenn die Meldungen englisch sind. Namen bleiben, Ämter und Begriffe werden übersetzt.
 - Verwende ausschließlich Fakten aus den Meldungen unten. Nichts aus eigenem Wissen ergänzen, keine Zahlen schätzen, keine Namen erfinden.
 - Jede Aussage bekommt den Schlüssel der Meldung, aus der sie stammt (z. B. "s2"). Nur Schlüssel von unten verwenden.
-- Eigene Worte, keine wörtlichen Zitate über 10 Wörter. Keine Wertung.
+- Komplett eigene Worte, keine Sätze aus den Meldungen übernehmen, keine wörtlichen Zitate über 8 Wörter. Keine Wertung.
 - typ "debatte" NUR wenn die Meldungen erkennbar Positionen verschiedener politischer Lager enthalten (Parteien, Verbände, Regierung, Opposition). Positionen nur Akteuren zuschreiben, die laut Meldung genau das vertreten. Links/Mitte/rechts nach den Akteuren, nicht nach dem Medium. Alle drei Seiten gleich lang und gleich stark. Ist eine Seite nicht belegbar, nimm typ "meldung".
 - typ "quatsch" nur für kuriose, harmlose Meldungen zum Schmunzeln (keine Unglücke, keine Opfer).
 - Sonst typ "meldung".
 - cat: eine aus [${CATS}]. icon: eines aus [${ICONS}].
-- title: höchstens 80 Zeichen, bei debatte als Frage. lead: 2–3 neutrale Sätze.
+- title: höchstens 70 Zeichen, bei debatte als Frage. lead: 2 kurze neutrale Sätze, zusammen höchstens 260 Zeichen.
+- bild: englischer Suchbegriff (2–4 Wörter) für ein passendes Foto eines ORTES, GEBÄUDES, GEGENSTANDS oder SYMBOLS (z. B. "Reichstag building Berlin", "Wall Street sign", "wind turbines"). NIEMALS eine Person, kein Name einer Person, keine Opfer, keine Unglücksorte. Wenn nichts Neutrales passt: "".
 
 JSON-FORMAT
-{"typ":"meldung|debatte|quatsch","cat":"…","icon":"…","title":"…","lead":"…",
+{"typ":"meldung|debatte|quatsch","cat":"…","icon":"…","bild":"…","title":"…","lead":"…",
  "facts":[["Kurzes Label","Wert","s1"]]  (0–3 Einträge, nur echte Zahlen/Daten aus den Meldungen),
- "points":[["Ein Satz.","s1"]]  (bei meldung/quatsch 2–4 Einträge, bei debatte weglassen),
- "L":{"who":"Vertreten u. a. von …","thesis":"kurzer Satz","a":[["Stichwort","Ein Satz.","s1"]],"long":["Absatz","Absatz"]},
- "M":{…gleich…},"R":{…gleich…}  (nur bei debatte; je 2–3 Einträge in a, je 2 Absätze in long)}
+ "points":[["Ein kurzer Satz.","s1"]]  (bei meldung/quatsch 2–4 Einträge, bei debatte weglassen),
+ "L":{"who":"Vertreten u. a. von …","thesis":"kurzer Satz","a":[["Stichwort","Ein kurzer Satz.","s1"]],"long":["Absatz","Absatz"]},
+ "M":{…gleich…},"R":{…gleich…}  (nur bei debatte; je 3 Einträge in a, je 2 Absätze in long)}
 
 MELDUNGEN
 ${lines}`;
+}
+
+function promptShort(list) {
+  const blocks = list.map((c) => `### ${c.id}\n` + c.items.slice(0, 5).map((x) => `- ${SRC[x.src].name}: ${x.title} — ${x.teaser.slice(0, 240)}`).join("\n")).join("\n\n");
+  return `Du bist Redakteur einer deutschen Nachrichten-App. Unten stehen mehrere Ereignisse (jeweils mit ### und einer ID), teils auf Englisch. Schreibe für JEDES Ereignis eine kurze Karte komplett auf Deutsch.
+
+REGELN
+- Nur Fakten aus den Meldungen, nichts ergänzen. Komplett eigene Worte, keine Sätze übernehmen. Neutral, ohne Wertung.
+- title: höchstens 70 Zeichen. lead: 1–2 kurze Sätze, höchstens 200 Zeichen.
+- cat: eine aus [${CATS}]. icon: eines aus [${ICONS}]. quatsch: true nur bei kuriosen, harmlosen Meldungen.
+
+Antworte als JSON-Objekt: {"<ID>":{"title":"…","lead":"…","cat":"…","icon":"…","quatsch":false}, …}
+
+EREIGNISSE
+${blocks}`;
 }
 
 function validate(card, n) {
@@ -226,6 +244,7 @@ function validate(card, n) {
   if (!card || !["meldung", "debatte", "quatsch"].includes(card.typ)) return "typ fehlt";
   if (!card.title || card.title.length > 110 || !card.lead) return "titel/lead";
   card.facts = (card.facts || []).filter((f) => Array.isArray(f) && f.length === 3 && okKey(f[2])).slice(0, 3);
+  card.bild = typeof card.bild === "string" ? card.bild.slice(0, 60) : "";
   if (card.typ === "debatte") {
     const lens = [];
     for (const k of ["L", "M", "R"]) {
@@ -237,7 +256,7 @@ function validate(card, n) {
     if (Math.max(...lens) / Math.max(1, Math.min(...lens)) > 2) return "seiten ungleich lang";
     delete card.points;
   } else {
-    card.points = (card.points || []).filter((p) => Array.isArray(p) && p.length === 2 && okKey(p[1]));
+    card.points = (card.points || []).filter((p) => Array.isArray(p) && p.length === 2 && okKey(p[1])).slice(0, 4);
     if (!card.points.length) return "keine belegten punkte";
     delete card.L; delete card.M; delete card.R;
   }
@@ -250,37 +269,91 @@ function sourcesOf(c) {
   return out;
 }
 
+/* Bilder: nur frei lizenzierte Fotos von Wikimedia Commons, mit Urheberangabe */
+const FREE = /^(cc0|public domain|pd|cc[ -]by(-sa)?([ -][\d.]+)?)/i;
+const NOT_FREE = /\bnc\b|non-?commercial|\bnd\b|noderivs|fair use/i;
+async function commonsImage(term) {
+  if (!term || FIXTURES) return null;
+  try {
+    const u = `https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=8&gsrsearch=${encodeURIComponent(term + " filetype:bitmap")}&prop=imageinfo&iiprop=url|extmetadata|size&iiurlwidth=900`;
+    const r = await fetch(u, { headers: { "User-Agent": "ZweiSeitenBot/1.0 (https://github.com/A28J09J02/zwei-seiten)" }, signal: AbortSignal.timeout(15000) });
+    const pages = Object.values((await r.json())?.query?.pages || {}).sort((a, b) => (a.index || 0) - (b.index || 0));
+    for (const p of pages) {
+      const ii = p.imageinfo?.[0], m = ii?.extmetadata || {};
+      const lic = (m.LicenseShortName?.value || "").trim();
+      if (!ii?.thumburl || !FREE.test(lic) || NOT_FREE.test(lic)) continue;
+      if (ii.width < 600 || ii.width < ii.height) continue;                       // nur Querformat in brauchbarer Größe
+      const cats = (m.Categories?.value || "").toLowerCase();
+      if (/portrait|people|men of|women of|politicians|births|deaths/.test(cats)) continue; // keine Personenfotos
+      const artist = (m.Artist?.value || "unbekannt").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
+      // Bild selbst speichern und von der eigenen Seite ausliefern (keine Weitergabe von Nutzerdaten an Dritte)
+      const ir = await fetch(ii.thumburl, { headers: { "User-Agent": "ZweiSeitenBot/1.0 (https://github.com/A28J09J02/zwei-seiten)" }, signal: AbortSignal.timeout(20000) });
+      if (!ir.ok) continue;
+      const buf = Buffer.from(await ir.arrayBuffer()); if (buf.length > 600000) continue;
+      const ext = /\.png$/i.test(ii.thumburl) ? "png" : "jpg", name = `${hash(ii.thumburl)}.${ext}`;
+      mkdirSync(`${DATA}/img`, { recursive: true }); writeFileSync(`${DATA}/img/${name}`, buf);
+      return { src: `data/img/${name}`, page: ii.descriptionurl, artist, license: lic, licenseUrl: m.LicenseUrl?.value || "" };
+    }
+  } catch {}
+  return null;
+}
+
 function rawCard(c) {
-  const pref = ["tagesschau", "ntv", "tagesspiegel", "bbc-world", "dw", "cbs", "thehill", "npr"];
+  const pref = ["tagesschau", "ntv", "tagesspiegel", "zeit", "spiegel", "faz", "bbc-world", "dw", "cbs", "thehill", "npr"];
   const items = [...c.items].sort((a, b) => (pref.indexOf(a.src) + 99) % 99 - (pref.indexOf(b.src) + 99) % 99);
-  const main = items[0], idx = (x) => `s${c.items.indexOf(x) + 1}`;
-  return { typ: isQuatsch(c) ? "quatsch" : "meldung", cat: isQuatsch(c) ? "Quatsch" : "Aktuell", icon: "news", title: main.title, lead: main.teaser || "",
-    points: items.slice(1, 4).filter((x) => x.teaser).map((x) => [x.teaser.split(/(?<=[.!?])\s/)[0].slice(0, 220), idx(x)]), facts: [] };
+  const main = items.find((x) => SRC[x.src].lang === "de") || items[0];
+  return { typ: isQuatsch(c) ? "quatsch" : "meldung", cat: isQuatsch(c) ? "Quatsch" : "Aktuell", icon: "news", title: main.title, lead: "", points: [], facts: [], lang: SRC[main.src].lang };
 }
 
 const hasAI = !!(GEMINI || GROQ);
-const candidates = Object.values(cards).filter((c) => eligible(c) && (c.gen === null || (c.gen === "raw" && (hasAI || c.newSince > 0)) || (c.gen === "ai" && c.newSince >= 2 && NOW - c.created < 24 * 3600e3)))
+const isFresh = (c) => NOW - c.created < 24 * 3600e3;
+const pending = Object.values(cards).filter((c) => eligible(c) && (c.gen === null || c.gen === "raw" || (c.gen === "short" && (c.newSince > 0 || hasAI)) || (c.gen === "ai" && c.newSince >= 2 && isFresh(c))))
   .sort((a, b) => score(b) - score(a));
-let aiBudget = MAX_AI;
-for (const c of candidates) {
-  let card = null, gen = "raw";
-  if ((GEMINI || GROQ) && !aiDown && aiBudget > 0) {
-    aiBudget--;
-    try {
-      const res = await ai(promptFor(c));
-      status.ai.provider = res.provider; status.ai.model = res.model;
-      const parsed = JSON.parse(res.text.replace(/^```(json)?|```$/g, "").trim());
-      const err = validate(parsed, Math.min(14, c.items.length));
-      if (err) { status.ai.failed++; log(`Verworfen (${err}): ${c.items[0].title}`); }
-      else { card = parsed; gen = "ai"; status.ai.written++; }
-      await sleep(4500);
-    } catch (e) { status.ai.failed++; status.ai.note = String(e.message).slice(0, 160); }
-  }
-  if (!card) { if (c.gen === "ai") { c.newSince = 0; continue; } card = rawCard(c); }
-  c.gen = gen; c.newSince = 0; c.updated = NOW;
-  c.card = { ...card, sources: sourcesOf(c), region: region(c), prio: 0, ai: gen === "ai" };
+
+const finish = (c, card, gen) => { c.gen = gen; c.newSince = 0; c.updated = NOW; c.card = { ...card, sources: sourcesOf(c), region: region(c), prio: 0, ai: gen === "ai" }; };
+
+// a) volle KI-Karten für die wichtigsten Ereignisse
+let aiBudget = hasAI ? MAX_AI : 0;
+for (const c of pending) {
+  if (aiBudget <= 0 || aiDown) break;
+  if (c.gen === "short" && !isFresh(c)) continue;      // ältere Kurzkarten nicht mehr aufwerten
+  aiBudget--;
+  try {
+    const res = await ai(promptFor(c));
+    status.ai.provider = res.provider; status.ai.model = res.model;
+    const parsed = JSON.parse(res.text.replace(/^```(json)?|```$/g, "").trim());
+    const err = validate(parsed, Math.min(14, c.items.length));
+    if (err) { status.ai.failed++; log(`Verworfen (${err}): ${c.items[0].title}`); }
+    else {
+      const img = await commonsImage(parsed.bild); delete parsed.bild;
+      if (img) parsed.img = img;
+      finish(c, parsed, "ai"); status.ai.written++;
+    }
+    await sleep(4500);
+  } catch (e) { status.ai.failed++; status.ai.note = String(e.message).slice(0, 160); }
 }
-if (!GEMINI && !GROQ) status.ai.note = "Kein KI-Schlüssel gesetzt: nur Schlagzeilen-Karten.";
+
+// b) deutsche Kurzfassung in Sammelaufrufen für alles, was noch keine KI-Karte hat
+const needShort = pending.filter((c) => c.gen !== "ai" && (c.gen !== "short" || c.newSince > 0)).slice(0, MAX_SHORT);
+for (let i = 0; i < needShort.length && hasAI && !aiDown; i += 20) {
+  const batch = needShort.slice(i, i + 20);
+  try {
+    const res = await ai(promptShort(batch));
+    const out = JSON.parse(res.text.replace(/^```(json)?|```$/g, "").trim());
+    for (const c of batch) {
+      const s = out[c.id];
+      if (!s || !s.title || !s.lead || s.title.length > 110) continue;
+      const pts = [];
+      finish(c, { typ: s.quatsch || isQuatsch(c) ? "quatsch" : "meldung", cat: s.quatsch ? "Quatsch" : s.cat || "Aktuell", icon: s.icon || "news", title: s.title, lead: s.lead.slice(0, 300), points: pts, facts: [], short: true }, "short");
+      status.ai.short = (status.ai.short || 0) + 1;
+    }
+    await sleep(4500);
+  } catch (e) { status.ai.note = String(e.message).slice(0, 160); }
+}
+
+// c) ohne KI: nur Schlagzeile mit Links (kein fremder Anrisstext)
+for (const c of pending) if (!c.card || (c.gen === "raw" && c.newSince > 0)) finish(c, rawCard(c), "raw");
+if (!hasAI) status.ai.note = "Kein KI-Schlüssel gesetzt: nur Schlagzeilen.";
 
 /* ---------- 5. Feed schreiben ---------- */
 const keepCut = NOW - KEEP_DAYS * 864e5;
@@ -288,7 +361,7 @@ for (const [id, c] of Object.entries(cards)) if (c.updated < keepCut || (!c.card
 for (const c of Object.values(cards)) if (c.items.length > 20) c.items = c.items.slice(0, 20);
 for (const [id, t] of Object.entries(state.seen)) if (t < NOW - 4 * 864e5) delete state.seen[id];
 
-const built = Object.values(cards).filter((c) => c.card).map((c) => {
+const built = Object.values(cards).filter((c) => c.card && (!hasAI || c.gen !== "raw" || c.card.lang === "de")).map((c) => {
   const s = score(c);
   return { id: c.id, ...c.card, prio: c.card.typ === "quatsch" ? 1 : s >= 9 ? 3 : s >= 5 ? 2 : 1, upd: iso(Math.max(...c.items.map((x) => x.ts))), created: iso(c.created), nsrc: new Set(c.items.map((x) => x.src)).size };
 });
@@ -296,6 +369,11 @@ const editorial = (feed.items || []).filter((x) => x.editorial && Date.parse(x.c
 const items = [...built, ...editorial].sort((a, b) => Date.parse(b.upd) - Date.parse(a.upd)).slice(0, MAX_ITEMS);
 
 writeJSON(`${DATA}/feed.json`, { generated: iso(NOW), ai: status.ai, items });
+// nicht mehr verwendete Bilder löschen
+if (existsSync(`${DATA}/img`)) {
+  const used = new Set(Object.values(cards).map((c) => c.card?.img?.src?.split("/").pop()).filter(Boolean));
+  for (const f of readdirSync(`${DATA}/img`)) if (!used.has(f)) unlinkSync(`${DATA}/img/${f}`);
+}
 writeJSON(`${DATA}/state.json`, state);
 writeJSON(`${DATA}/status.json`, status);
 log(`Feed: ${items.length} Karten (${status.ai.written} neu per KI, ${status.ai.failed} KI-Fehler). ${status.ai.note}`);

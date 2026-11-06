@@ -68,7 +68,8 @@ jobs:
         run: |
           mkdir -p _site/data
           cp index.html app.js style.css sw.js manifest.webmanifest _site/
-          cp -r icons _site/
+          cp -r icons fonts robots.txt _site/
+          if [ -d data/img ]; then cp -r data/img _site/data/; fi
           cp data/feed.json data/status.json _site/data/
 
       - uses: actions/configure-pages@v5

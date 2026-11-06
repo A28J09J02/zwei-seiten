@@ -1,3 +1,7 @@
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/unbounded-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/unbounded-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2")}
 [hidden]{display:none!important}
 
 /* Layout: Vollbild-Feed, vertikal Themen (Snap), horizontal Perspektiven (Snap), Langfassung als Bottom-Sheet */
@@ -129,3 +133,33 @@ p{margin:0;line-height:1.55}
 .single .pan{overflow-x:hidden}
 .status{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:12px;padding-inline:max(24px,env(safe-area-inset-left,0px)) max(24px,env(safe-area-inset-right,0px))}
 .lean{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+
+/* --- Version 2: Karten passen auf einen Bildschirm --- */
+.hbtns{display:flex;gap:6px}
+.panel{overflow:hidden;padding-bottom:66px;gap:12px}
+.panel h2{font-size:21px}
+.media{margin:0;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:16/9;max-width:100%;flex-shrink:0;background:var(--card);border:1px solid var(--line)}
+.media img{width:100%;height:100%;object-fit:cover;display:block}
+.media figcaption{position:absolute;left:0;right:0;bottom:0;font-size:10.5px;padding:10px 10px 5px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.head .art{aspect-ratio:auto;height:96px}
+.head .art svg{width:52px;height:52px}
+.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.body{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+.points li{display:flex;flex-direction:column;padding:10px 12px}
+.points li span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.points.full li span{display:block}
+.args li span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.more.primary{background:var(--fg);color:var(--phone);border-color:var(--fg)}
+.hint{align-items:center}
+.hint .next{pointer-events:auto;font:700 13px var(--body);background:var(--card);border:1px solid var(--line);color:var(--fg);border-radius:99px;padding:8px 14px;cursor:pointer}
+.ovlist{display:flex;flex-direction:column}
+.ovrow{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:11px 0;color:var(--fg);font:15px/1.35 var(--body);cursor:pointer}
+.ovrow i{width:8px;height:8px;border-radius:50%;background:var(--line);margin-top:6px;flex-shrink:0}
+.ovrow i.new{background:var(--left)}
+.ovrow small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.sheet-body a{color:var(--fg)}
+.panel > *:not(.body){flex-shrink:0}
+.media{max-height:30vh;width:100%}
+@media (max-height:700px){.media{max-height:24vh}.head .art{height:72px}.panel h2{font-size:19px}.clamp{-webkit-line-clamp:3}}
+.body li.cut{display:none}

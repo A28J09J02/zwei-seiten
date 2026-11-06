@@ -69,7 +69,7 @@ function buildRound(round) {
   }
   return out;
 }
-const REASON = { top: ["Wichtig jetzt", ""], news: ["Aktuell", ""], fy: ["Für dich", "fy"], seen: ["Schon gesehen", "again"] };
+const REASON = { pick: ["Ausgewählt", ""], top: ["Wichtig jetzt", ""], news: ["Aktuell", ""], fy: ["Für dich", "fy"], seen: ["Schon gesehen", "again"] };
 
 /* ---------- Karten ---------- */
 function whyHTML(it, reason) {
@@ -78,27 +78,32 @@ function whyHTML(it, reason) {
   const txt = reason === "fy" ? `Weil dich ${esc(it.cat)} interessiert` : `${esc(REGION[it.region] || "")} · ${esc(it.cat || "")} · ${ago(it.upd)}`;
   return `<div class="why">${badge}<span>${txt}</span></div>`;
 }
-function headPanel(it, reason) {
+function mediaHTML(it) {
+  if (it.img && it.img.src) return `<figure class="media"><img src="${esc(it.img.src)}" alt="" loading="lazy" decoding="async"><figcaption>Foto: ${esc(it.img.artist)} · ${esc(it.img.license)} · Wikimedia Commons</figcaption></figure>`;
   const icon = ICONS[it.icon] || (it.typ === "quatsch" ? ICONS.smile : ICONS.news);
-  const facts = (it.facts || []).length ? `<ul class="facts">${it.facts.map((f) => `<li><span>${esc(f[0])}</span><b>${esc(f[1])}</b></li>`).join("")}</ul>` : "";
-  const points = it.typ !== "debatte" && (it.points || []).length ? `<ul class="points">${it.points.map((p) => `<li>${esc(p[0])}<small>Quelle: ${esc(srcName(it, p[1]))}</small></li>`).join("")}</ul>` : "";
+  return `<div class="art" aria-hidden="true"><i></i><i></i><i></i>${icon}</div>`;
+}
+function headPanel(it, reason) {
+  const facts = (it.facts || []).length ? `<ul class="facts">${it.facts.slice(0, 3).map((f) => `<li><span>${esc(f[0])}</span><b>${esc(f[1])}</b></li>`).join("")}</ul>` : "";
+  const pts = it.typ !== "debatte" ? (it.points || []).slice(0, 2) : [];
+  const points = pts.length ? `<ul class="points">${pts.map((p) => `<li><span>${esc(p[0])}</span><small>${esc(srcName(it, p[1]))}</small></li>`).join("")}</ul>` : "";
   const n = Object.keys(it.sources || {}).length;
-  return `<section class="panel">${whyHTML(it, reason)}
-   <div class="art" aria-hidden="true"><i></i><i></i><i></i>${icon}</div>
-   <h2>${esc(it.title)}</h2>${it.lead ? `<p class="lead">${esc(it.lead)}</p>` : ""}${facts}${points}
-   <button class="more" data-side="S">${n} ${n === 1 ? "Quelle" : "Quellen"} ansehen</button>
-   <p class="ailabel">${label(it)} · Stand ${day(it.upd)}</p></section>`;
+  const main = it.typ === "debatte" ? `<button class="more primary" data-goto="1">Die drei Seiten ansehen →</button>`
+    : (it.points || []).length || (it.facts || []).length ? `<button class="more primary" data-side="D">Mehr lesen</button>` : "";
+  return `<section class="panel head">${mediaHTML(it)}${whyHTML(it, reason)}
+   <h2>${esc(it.title)}</h2>${it.lead ? `<p class="lead clamp">${esc(it.lead)}</p>` : ""}<div class="body">${facts}${points}</div>
+   <div class="actions">${main}<button class="more" data-side="S">${n} ${n === 1 ? "Quelle" : "Quellen"}</button></div></section>`;
 }
 function sidePanel(it, k) {
   const d = it[k], s = SIDES[k];
   return `<section class="panel ${s.cls}"><div class="side"><i class="dot"></i><span>${s.name}</span></div>
    <p class="who">${esc(d.who)}</p><div class="thesis">${esc(d.thesis)}</div>
-   <ul class="args">${(d.a || []).map((a) => `<li><b>${esc(a[0])}</b>${esc(a[1])}<small>Quelle: ${esc(srcName(it, a[2]))}</small></li>`).join("")}</ul>
-   <button class="more" data-side="${k}">Ganzen Beitrag lesen</button></section>`;
+   <div class="body"><ul class="args">${(d.a || []).slice(0, 3).map((a) => `<li><b>${esc(a[0])}</b><span>${esc(a[1])}</span><small>${esc(srcName(it, a[2]))}</small></li>`).join("")}</ul></div>
+   <div class="actions"><button class="more primary" data-side="${k}">Ganzen Beitrag lesen</button></div></section>`;
 }
 function topicHTML(it, reason) {
   if (it.typ !== "debatte") {
-    return `<article class="topic single ${it.typ}" data-id="${esc(it.id)}"><div class="pan">${headPanel(it, reason)}</div><div class="hint"><span>${esc(it.typ === "quatsch" ? "Zum Abschalten" : "Meldung")}</span><span>Weiter ↓</span></div></article>`;
+    return `<article class="topic single ${it.typ}" data-id="${esc(it.id)}"><div class="pan">${headPanel(it, reason)}</div>${barHTML()}</article>`;
   }
   const v = st.votes[it.id];
   return `<article class="topic" data-id="${esc(it.id)}">
@@ -109,7 +114,13 @@ function topicHTML(it, reason) {
      <div class="scale">${LBL.map((l, j) => `<button data-v="${j}" class="${v === j ? "on" : ""}">${l.replace(" ", "<br>")}</button>`).join("")}</div>
      <div class="legend"><span>links</span><span>rechts</span></div>
      <p class="note">Deine Wahl bleibt auf diesem Gerät. Eine gemeinsame Auswertung aller Stimmen kommt später.</p></section>
-   </div><div class="hint"><span>← Seiten wischen</span><span>Weiter ↓</span></div></article>`;
+   </div>${barHTML("← wischen für die Seiten")}</article>`;
+}
+
+const barHTML = (txt = "") => `<div class="hint"><span class="prog">${txt}</span><button class="next" aria-label="Nächste Karte">Weiter ↓</button></div>`;
+function updateProg() {
+  const left = ITEMS.filter((i) => inFilter(i) && !st.seen[i.id]).length;
+  document.querySelectorAll(".topic .prog").forEach((el) => { if (!el.dataset.fixed) el.textContent = left ? `${left} neue übrig` : "Alles gesehen"; });
 }
 
 /* ---------- Bottom-Sheet ---------- */
@@ -122,9 +133,20 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !sheet.h
 function srcList(it, keys) {
   return `<h4>Quellen</h4><ol class="srcs">${keys.filter((k) => it.sources?.[k]).map((k) => { const s = it.sources[k]; return `<li><div><a href="${esc(s.u)}" target="_blank" rel="noopener">${esc(s.t)}</a><span>${esc(s.o)}${s.d ? " · " + esc(day(s.d)) : ""}</span></div></li>`; }).join("")}</ol>`;
 }
+function imgCredit(it) {
+  if (!it.img) return "";
+  const lic = it.img.licenseUrl ? `<a href="${esc(it.img.licenseUrl)}" target="_blank" rel="noopener">${esc(it.img.license)}</a>` : esc(it.img.license);
+  return `<p class="note">Foto: <a href="${esc(it.img.page)}" target="_blank" rel="noopener">${esc(it.img.artist)}</a>, ${lic}, via Wikimedia Commons. Symbolbild, nicht vom Ereignis selbst.</p>`;
+}
 function openArticle(it, k) {
+  if (k === "D") {
+    const facts = (it.facts || []).length ? `<ul class="facts">${it.facts.map((f) => `<li><span>${esc(f[0])}</span><b>${esc(f[1])}</b></li>`).join("")}</ul>` : "";
+    const pts = (it.points || []).map((p) => `<li><span>${esc(p[0])}</span><small>${esc(srcName(it, p[1]))}</small></li>`).join("");
+    showSheet("", `<span>${esc(it.typ === "quatsch" ? "Quatsch" : "Meldung")}</span>`, `<h3 id="sheet-title">${esc(it.title)}</h3>${it.lead ? `<p>${esc(it.lead)}</p>` : ""}${facts}${pts ? `<ul class="points full">${pts}</ul>` : ""}${imgCredit(it)}${srcList(it, Object.keys(it.sources || {}))}<p class="note">${label(it)} · Stand ${day(it.upd)}</p>`);
+    return;
+  }
   if (k === "S") {
-    showSheet("", "<span>Quellen</span>", `<h3 id="sheet-title">${esc(it.title)}</h3><p class="lead">${it.ai ? "Diese Karte wurde automatisch aus den folgenden Meldungen zusammengefasst. Für Details tippe auf den Originalartikel." : "Die Inhalte stammen aus diesen Quellen. Für Details tippe auf den Originalartikel."}</p>${srcList(it, Object.keys(it.sources || {}))}`);
+    showSheet("", "<span>Quellen</span>", `<h3 id="sheet-title">${esc(it.title)}</h3><p class="lead">${it.ai ? "Diese Karte wurde automatisch aus den folgenden Meldungen zusammengefasst. Für Details tippe auf den Originalartikel." : "Die Inhalte stammen aus diesen Quellen. Für Details tippe auf den Originalartikel."}</p>${imgCredit(it)}${srcList(it, Object.keys(it.sources || {}))}`);
     return;
   }
   const d = it[k], s = SIDES[k]; bump(it.cat, 2);
@@ -147,10 +169,22 @@ function forYou() {
   const name = (k) => k.startsWith("r:") ? REGION[k.slice(2)] || k : k.startsWith("t:") ? k.slice(2) : k;
   const rows = keys.length ? keys.map((k) => `<div class="ibar"><b>${esc(name(k))}</b><div><i style="width:${Math.round(st.interest[k] / max * 100)}%"></i></div><span>${st.interest[k]}</span></div>`).join("") : `<p class="note">Noch keine Interessen. Lies ein paar Karten, dann lernt der Feed dazu.</p>`;
   const ai = AI && AI.provider ? `KI: ${esc(AI.provider)} (${esc(AI.model || "")})` : "Ohne KI-Schlüssel: nur Schlagzeilen";
-  showSheet("", "<span>Für dich</span>", `<h3 id="sheet-title">So entsteht dein Feed</h3><p class="lead">Zuerst kommen die zwei wichtigsten aktuellen Meldungen. Danach sortiert die App nach deinen Interessen, aber jede dritte Karte ist wieder allgemein wichtig, damit du nicht in einer Blase landest.</p><h4>Deine Interessen</h4>${rows}<p class="note">Punkte gibt es für Lesezeit, Seitenwechsel, gelesene Beiträge und Abstimmungen. Alles bleibt nur auf diesem Gerät.</p><p class="note">Nachrichten zuletzt aktualisiert: ${GENERATED ? ago(GENERATED) : "unbekannt"} · ${ITEMS.length} Karten · ${ai}</p><button class="btn" id="reset">Interessen zurücksetzen</button>`);
+  showSheet("", "<span>Für dich</span>", `<h3 id="sheet-title">So entsteht dein Feed</h3><p class="lead">Zuerst kommen die zwei wichtigsten aktuellen Meldungen. Danach sortiert die App nach deinen Interessen, aber jede dritte Karte ist wieder allgemein wichtig, damit du nicht in einer Blase landest.</p><h4>Deine Interessen</h4>${rows}<p class="note">Punkte gibt es für Lesezeit, Seitenwechsel, gelesene Beiträge und Abstimmungen. Alles bleibt nur auf diesem Gerät.</p><p class="note">Nachrichten zuletzt aktualisiert: ${GENERATED ? ago(GENERATED) : "unbekannt"} · ${ITEMS.length} Karten · ${ai}</p><button class="btn" id="reset">Interessen zurücksetzen</button><h4>Über diese App</h4><p class="note">Privates, nicht-kommerzielles Projekt ohne Werbung und ohne Tracking. Die Karten werden automatisch aus Meldungen der genannten Medien zusammengefasst, in eigenen Worten und mit Link zum Original. Die Rechte an den Originalartikeln liegen bei den Medien. Fotos stammen von Wikimedia Commons unter freien Lizenzen, Urheber und Lizenz stehen an jedem Bild. Schriften werden von dieser Seite selbst geladen, es werden keine Daten an Dritte übertragen.</p>`);
   $("reset").onclick = () => { st.interest = {}; saveSt(); closeSheet(); };
 }
 $("foryou").onclick = forYou;
+function overview() {
+  const pool = ITEMS.filter((i) => i.typ !== "quatsch" || filter === "quatsch");
+  const row = (it) => `<button class="ovrow" data-id="${esc(it.id)}"><i class="${st.seen[it.id] ? "" : "new"}"></i><span>${esc(it.title)}<small>${esc(REGION[it.region] || "")} · ${esc(it.cat || "")} · ${ago(it.upd)}${it.typ === "debatte" ? " · Debatte" : ""}</small></span></button>`;
+  const sec = (title, list) => list.length ? `<h4>${title}</h4><div class="ovlist">${list.slice(0, 8).map(row).join("")}</div>` : "";
+  const byNews = [...pool].sort((a, b) => newsScore(b) - newsScore(a));
+  const recent = (f) => pool.filter(f).sort((a, b) => Date.parse(b.upd) - Date.parse(a.upd));
+  const html = sec("Wichtig jetzt", byNews.slice(0, 5)) + sec("Debatten", recent((i) => i.typ === "debatte")) + sec("Deutschland", recent((i) => i.region === "de" && i.typ === "meldung")) + sec("USA", recent((i) => i.region === "us" && i.typ === "meldung")) + sec("Welt", recent((i) => i.region === "welt" && i.typ === "meldung")) + sec("Quatsch", ITEMS.filter((i) => i.typ === "quatsch").slice(0, 5));
+  const left = ITEMS.filter((i) => i.typ !== "quatsch" && !st.seen[i.id]).length;
+  showSheet("", "<span>Übersicht</span>", `<h3 id="sheet-title">${left ? `${left} neue Karten` : "Alles gesehen"}</h3><p class="lead">Tippe auf eine Schlagzeile, um direkt dorthin zu springen. Ein roter Punkt heißt: noch nicht gelesen.</p>${html}`);
+  body.querySelectorAll(".ovrow").forEach((b) => (b.onclick = () => { const it = ITEMS.find((x) => x.id === b.dataset.id); if (it && !inFilter(it)) { filter = it.typ === "quatsch" ? "quatsch" : "alle"; document.querySelectorAll("#filters button").forEach((x) => x.classList.toggle("on", x.dataset.f === filter)); } onClose = null; sheet.hidden = true; scrim.hidden = true; resetFeed(b.dataset.id); }));
+}
+$("overview").onclick = overview;
 
 /* ---------- Feed ---------- */
 const feed = $("feed");
@@ -161,16 +195,19 @@ const io = new IntersectionObserver((es) => es.forEach((e) => {
   if (e.isIntersecting) { dwell.set(el, Date.now()); if (el === feed.lastElementChild) appendMore(3); }
   else if (dwell.has(el)) {
     const sec = (Date.now() - dwell.get(el)) / 1000; dwell.delete(el);
-    if (it && sec > 1.5 && !st.seen[it.id]) { st.seen[it.id] = Date.now(); saveSt(); }
+    if (it && sec > 1.5 && !st.seen[it.id]) { st.seen[it.id] = Date.now(); saveSt(); updateProg(); }
     if (it && sec > 6) { const n = Math.min(2, sec / 15); bump(it.cat, n); bump("r:" + it.region, n / 2); }
   }
 }), { root: feed, threshold: 0.6 });
 
 function wire(art, it) {
   art._it = it;
-  art.querySelectorAll(".more").forEach((b) => (b.onclick = () => openArticle(it, b.dataset.side)));
+  art.querySelectorAll(".more[data-side]").forEach((b) => (b.onclick = () => openArticle(it, b.dataset.side)));
+  const nx = art.querySelector(".next"); if (nx) nx.onclick = () => feed.scrollBy({ top: feed.clientHeight, behavior: "smooth" });
+  const prog = art.querySelector(".prog"); if (prog && prog.textContent) prog.dataset.fixed = "1";
   if (it.typ === "debatte") {
     const pan = art.querySelector(".pan"), tabs = [...art.querySelectorAll(".tabs button")], seenSide = new Set();
+    art.querySelectorAll("[data-goto]").forEach((b) => (b.onclick = () => pan.scrollTo({ left: pan.clientWidth * +b.dataset.goto, behavior: "smooth" })));
     tabs.forEach((b) => (b.onclick = () => pan.scrollTo({ left: pan.clientWidth * +b.dataset.p, behavior: "smooth" })));
     pan.addEventListener("scroll", () => { const p = Math.round(pan.scrollLeft / pan.clientWidth); tabs.forEach((b, k) => b.classList.toggle("on", k === p)); if (p >= 1 && p <= 3 && !seenSide.has(p)) { seenSide.add(p); bump(it.cat, 0.5); } }, { passive: true });
     art.querySelectorAll(".scale button").forEach((b) => (b.onclick = () => { const v = +b.dataset.v; if (st.votes[it.id] == null) bump(it.cat, 1); st.votes[it.id] = v; saveSt(); art.querySelectorAll(".scale button").forEach((x) => x.classList.toggle("on", x === b)); }));
@@ -193,11 +230,23 @@ function appendMore(n) {
     }
     const { it, reason } = queue.shift();
     const wrap = document.createElement("div"); wrap.innerHTML = topicHTML(it, reason);
-    const art = wrap.firstElementChild; feed.appendChild(art); wire(art, it);
+    const art = wrap.firstElementChild; feed.appendChild(art); wire(art, it); fit(art);
   }
+  updateProg();
 }
-function resetFeed() {
+// Punkte, die nicht ganz auf die Karte passen, ausblenden statt abschneiden (Rest steht unter "Mehr lesen")
+function fit(art) {
+  requestAnimationFrame(() => art.querySelectorAll(".body").forEach((b) => {
+    const lis = [...b.querySelectorAll("li")]; lis.forEach((li) => li.classList.remove("cut"));
+    const max = b.getBoundingClientRect().bottom;
+    let cut = false; for (const li of lis) { if (cut || li.getBoundingClientRect().bottom > max + 1) { li.classList.add("cut"); cut = true; } }
+    const fx = b.querySelector(".facts"); if (fx && !fx.querySelector("li:not(.cut)")) fx.style.display = "none";
+  }));
+}
+window.addEventListener("resize", () => document.querySelectorAll(".topic").forEach(fit));
+function resetFeed(startId) {
   io.disconnect(); dwell.clear(); feed.innerHTML = ""; feed.scrollTop = 0; round = 0; finished = false; queue = buildRound(0);
+  if (startId) { const it = ITEMS.find((x) => x.id === startId); if (it) { queue = queue.filter((q) => q.it.id !== startId); queue.unshift({ it, reason: "pick" }); } }
   if (!queue.length && !ITEMS.some(inFilter)) { feed.appendChild(infoCard(`<div class="cat">Leer</div><h2>Hier ist gerade nichts.</h2><p class="lead">In diesem Filter gibt es noch keine Karten.</p>`, "status")); return; }
   appendMore(3);
 }

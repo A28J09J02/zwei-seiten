@@ -15,6 +15,7 @@ Ohne Schlüssel läuft alles, aber nur mit Schlagzeilen-Karten.
 
 - **Gemini (Haupt-KI, kostenlos):** Auf <https://aistudio.google.com> mit dem Google-Konto anmelden → „Get API key“ → Schlüssel erstellen. Dann im Repo: *Settings → Secrets and variables → Actions → New repository secret*, Name `GEMINI_API_KEY`.
 - **Groq (Ersatz, kostenlos):** Auf <https://console.groq.com> Schlüssel erstellen, als Secret `GROQ_API_KEY` hinterlegen.
+- Fotos: nur frei lizenzierte Bilder von Wikimedia Commons (CC0, gemeinfrei, CC BY, CC BY-SA), keine Personen, mit Urheber und Lizenz an jedem Bild. Sie werden im Daten-Branch gespeichert und von der eigenen Seite ausgeliefert.
 - Optional: Variable `GEMINI_MODEL` (z. B. `gemini-2.5-flash`), sonst sucht das Skript das neueste Flash-Modell selbst.
 
 ## Quellen ändern
